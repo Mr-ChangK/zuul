@@ -18,10 +18,9 @@ package com.netflix.netty.common;
 
 /**
  * Indicates a timeout in reading the full http request.
- *
+ * <p>
  * ie. time between receiving request headers and LastHttpContent of request body.
  */
-public class HttpRequestReadTimeoutEvent
-{
-    public static final HttpRequestReadTimeoutEvent INSTANCE = new HttpRequestReadTimeoutEvent();
+public class HttpRequestReadTimeoutEvent {
+	public static final HttpRequestReadTimeoutEvent INSTANCE = new HttpRequestReadTimeoutEvent();
 }

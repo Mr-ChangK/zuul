@@ -25,41 +25,40 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Client Ssl Context Factory
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: May 14, 2018
  */
 public class ClientSslContextFactory extends BaseSslContextFactory {
 
-    private static final Logger log = LoggerFactory.getLogger(ClientSslContextFactory.class);
+	private static final Logger log = LoggerFactory.getLogger(ClientSslContextFactory.class);
 
-    private static final ServerSslConfig DEFAULT_CONFIG = new ServerSslConfig(
-            new String[]{"TLSv1.2"},
-            ServerSslConfig.getDefaultCiphers(),
-            null,
-            null
-    );
+	private static final ServerSslConfig DEFAULT_CONFIG = new ServerSslConfig(
+			new String[]{"TLSv1.2"},
+			ServerSslConfig.getDefaultCiphers(),
+			null,
+			null
+	);
 
-    public ClientSslContextFactory(Registry spectatorRegistry) {
-        super(spectatorRegistry, DEFAULT_CONFIG);
-    }
+	public ClientSslContextFactory(Registry spectatorRegistry) {
+		super(spectatorRegistry, DEFAULT_CONFIG);
+	}
 
-    public ClientSslContextFactory(Registry spectatorRegistry, ServerSslConfig serverSslConfig) {
-        super(spectatorRegistry, serverSslConfig);
-    }
+	public ClientSslContextFactory(Registry spectatorRegistry, ServerSslConfig serverSslConfig) {
+		super(spectatorRegistry, serverSslConfig);
+	}
 
-    public SslContext getClientSslContext() {
-        try {
-            return SslContextBuilder
-                    .forClient()
-                    .sslProvider(chooseSslProvider())
-                    .ciphers(getCiphers(), getCiphersFilter())
-                    .protocols(getProtocols())
-                    .build();
-        }
-        catch (Exception e) {
-            log.error("Error loading SslContext client request.", e);
-            throw new RuntimeException("Error configuring SslContext for client request!", e);
-        }
-    }
+	public SslContext getClientSslContext() {
+		try {
+			return SslContextBuilder
+					.forClient()
+					.sslProvider(chooseSslProvider())
+					.ciphers(getCiphers(), getCiphersFilter())
+					.protocols(getProtocols())
+					.build();
+		} catch (Exception e) {
+			log.error("Error loading SslContext client request.", e);
+			throw new RuntimeException("Error configuring SslContext for client request!", e);
+		}
+	}
 }

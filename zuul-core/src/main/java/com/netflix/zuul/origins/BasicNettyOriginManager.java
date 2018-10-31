@@ -26,29 +26,29 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Basic Netty Origin Manager that most apps can use. This can also serve as a useful template for creating more
  * complex origin managers.
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: November 30, 2017
  */
 @Singleton
 public class BasicNettyOriginManager implements OriginManager<BasicNettyOrigin> {
 
-    private final Registry registry;
-    private final ConcurrentHashMap<String, BasicNettyOrigin> originMappings;
+	private final Registry registry;
+	private final ConcurrentHashMap<String, BasicNettyOrigin> originMappings;
 
-    @Inject
-    public BasicNettyOriginManager(Registry registry) {
-        this.registry = registry;
-        this.originMappings = new ConcurrentHashMap<>();
-    }
+	@Inject
+	public BasicNettyOriginManager(Registry registry) {
+		this.registry = registry;
+		this.originMappings = new ConcurrentHashMap<>();
+	}
 
-    @Override
-    public BasicNettyOrigin getOrigin(String name, String vip, String uri, SessionContext ctx) {
-        return originMappings.computeIfAbsent(name, n -> createOrigin(name, vip, uri, false, ctx));
-    }
+	@Override
+	public BasicNettyOrigin getOrigin(String name, String vip, String uri, SessionContext ctx) {
+		return originMappings.computeIfAbsent(name, n -> createOrigin(name, vip, uri, false, ctx));
+	}
 
-    @Override
-    public BasicNettyOrigin createOrigin(String name, String vip, String uri, boolean useFullVipName, SessionContext ctx) {
-        return new BasicNettyOrigin(name, vip, registry);
-    }
+	@Override
+	public BasicNettyOrigin createOrigin(String name, String vip, String uri, boolean useFullVipName, SessionContext ctx) {
+		return new BasicNettyOrigin(name, vip, registry);
+	}
 }

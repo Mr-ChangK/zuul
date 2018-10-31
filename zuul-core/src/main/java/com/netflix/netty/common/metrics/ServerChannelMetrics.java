@@ -39,90 +39,80 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Time: 5:47 PM
  */
 @ChannelHandler.Sharable
-public class ServerChannelMetrics extends ChannelInboundHandlerAdapter
-{
-    private static final Logger LOG = LoggerFactory.getLogger(ServerChannelMetrics.class);
-    private static final AttributeKey<AtomicInteger> ATTR_CURRENT_CONNS = AttributeKey.newInstance("_server_connections_count");
+public class ServerChannelMetrics extends ChannelInboundHandlerAdapter {
+	private static final Logger LOG = LoggerFactory.getLogger(ServerChannelMetrics.class);
+	private static final AttributeKey<AtomicInteger> ATTR_CURRENT_CONNS = AttributeKey.newInstance("_server_connections_count");
 
-    private final Gauge currentConnectionsGauge;
-    private final AtomicInteger currentConnections = new AtomicInteger(0);
-    private final BasicCounter totalConnections;
-    private final BasicCounter connectionClosed;
-    private final BasicCounter connectionIdleTimeout;
-    private final BasicCounter connectionErrors;
-    private final BasicCounter connectionThrottled;
+	private final Gauge currentConnectionsGauge;
+	private final AtomicInteger currentConnections = new AtomicInteger(0);
+	private final BasicCounter totalConnections;
+	private final BasicCounter connectionClosed;
+	private final BasicCounter connectionIdleTimeout;
+	private final BasicCounter connectionErrors;
+	private final BasicCounter connectionThrottled;
 
-    public ServerChannelMetrics(String id)
-    {
-        super();
-        
-        String metricNamePrefix = "server.connections.";
-        currentConnectionsGauge = new BasicGauge<>(MonitorConfig.builder(metricNamePrefix + "current").withTag("id", id).build(),
-                () -> currentConnections.get() );
-        DefaultMonitorRegistry.getInstance().register(currentConnectionsGauge);
+	public ServerChannelMetrics(String id) {
+		super();
 
-        totalConnections = createCounter(metricNamePrefix + "connect", id);
-        connectionErrors = createCounter(metricNamePrefix + "errors", id);
-        connectionClosed = createCounter(metricNamePrefix + "close", id);
-        connectionIdleTimeout = createCounter(metricNamePrefix + "idle.timeout", id);
-        connectionThrottled = createCounter(metricNamePrefix + "throttled", id);
-    }
-    
-    private static BasicCounter createCounter(String name, String id)
-    {
-        BasicCounter counter = new BasicCounter(MonitorConfig.builder(name).withTag("id", id).build());
-        DefaultMonitorRegistry.getInstance().register(counter);
-        return counter;
-    }
+		String metricNamePrefix = "server.connections.";
+		currentConnectionsGauge = new BasicGauge<>(MonitorConfig.builder(metricNamePrefix + "current").withTag("id", id).build(),
+				() -> currentConnections.get());
+		DefaultMonitorRegistry.getInstance().register(currentConnectionsGauge);
 
-    public static int currentConnectionCountFromChannel(Channel ch)
-    {
-        AtomicInteger count = ch.attr(ATTR_CURRENT_CONNS).get();
-        return count == null ? 0 : count.get();
-    }
+		totalConnections = createCounter(metricNamePrefix + "connect", id);
+		connectionErrors = createCounter(metricNamePrefix + "errors", id);
+		connectionClosed = createCounter(metricNamePrefix + "close", id);
+		connectionIdleTimeout = createCounter(metricNamePrefix + "idle.timeout", id);
+		connectionThrottled = createCounter(metricNamePrefix + "throttled", id);
+	}
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception
-    {
-        currentConnections.incrementAndGet();
-        totalConnections.increment();
-        ctx.channel().attr(ATTR_CURRENT_CONNS).set(currentConnections);
+	private static BasicCounter createCounter(String name, String id) {
+		BasicCounter counter = new BasicCounter(MonitorConfig.builder(name).withTag("id", id).build());
+		DefaultMonitorRegistry.getInstance().register(counter);
+		return counter;
+	}
 
-        super.channelActive(ctx);
-    }
+	public static int currentConnectionCountFromChannel(Channel ch) {
+		AtomicInteger count = ch.attr(ATTR_CURRENT_CONNS).get();
+		return count == null ? 0 : count.get();
+	}
 
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception
-    {
-        try {
-            super.channelInactive(ctx);
-        }
-        finally {
-            currentConnections.decrementAndGet();
-            connectionClosed.increment();
-        }
-    }
+	@Override
+	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+		currentConnections.incrementAndGet();
+		totalConnections.increment();
+		ctx.channel().attr(ATTR_CURRENT_CONNS).set(currentConnections);
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
-    {
-        connectionErrors.increment();
-        if (LOG.isInfoEnabled()) {
-            LOG.info("Connection error caught. " + String.valueOf(cause), cause);
-        }
-        super.exceptionCaught(ctx, cause);
-    }
+		super.channelActive(ctx);
+	}
 
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
-    {
-        if (evt == MaxInboundConnectionsHandler.CONNECTION_THROTTLED_EVENT) {
-            connectionThrottled.increment();
-        }
-        else if (evt instanceof IdleStateEvent) {
-            connectionIdleTimeout.increment();
-        }
+	@Override
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		try {
+			super.channelInactive(ctx);
+		} finally {
+			currentConnections.decrementAndGet();
+			connectionClosed.increment();
+		}
+	}
 
-        super.userEventTriggered(ctx, evt);
-    }
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		connectionErrors.increment();
+		if (LOG.isInfoEnabled()) {
+			LOG.info("Connection error caught. " + String.valueOf(cause), cause);
+		}
+		super.exceptionCaught(ctx, cause);
+	}
+
+	@Override
+	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+		if (evt == MaxInboundConnectionsHandler.CONNECTION_THROTTLED_EVENT) {
+			connectionThrottled.increment();
+		} else if (evt instanceof IdleStateEvent) {
+			connectionIdleTimeout.increment();
+		}
+
+		super.userEventTriggered(ctx, evt);
+	}
 }

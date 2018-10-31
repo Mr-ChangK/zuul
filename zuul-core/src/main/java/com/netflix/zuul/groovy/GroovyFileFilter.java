@@ -41,39 +41,39 @@ import static org.mockito.Mockito.when;
  * Filters only .groovy files
  */
 public class GroovyFileFilter implements FilenameFilter {
-    public boolean accept(File dir, String name) {
-        return name.endsWith(".groovy");
-    }
+	public boolean accept(File dir, String name) {
+		return name.endsWith(".groovy");
+	}
 
 
-    @RunWith(MockitoJUnitRunner.class)
-    public static class UnitTest {
+	@RunWith(MockitoJUnitRunner.class)
+	public static class UnitTest {
 
-        @Mock
-        private File nonGroovyFile;
-        @Mock
-        private File groovyFile;
+		@Mock
+		private File nonGroovyFile;
+		@Mock
+		private File groovyFile;
 
-        @Mock
-        private File directory;
+		@Mock
+		private File directory;
 
-        @Before
-        public void before() {
-            MockitoAnnotations.initMocks(this);
-        }
+		@Before
+		public void before() {
+			MockitoAnnotations.initMocks(this);
+		}
 
 
-        @Test
-        public void testGroovyFileFilter() {
+		@Test
+		public void testGroovyFileFilter() {
 
-            when(nonGroovyFile.getName()).thenReturn("file.mikey");
-            when(groovyFile.getName()).thenReturn("file.groovy");
+			when(nonGroovyFile.getName()).thenReturn("file.mikey");
+			when(groovyFile.getName()).thenReturn("file.groovy");
 
-            GroovyFileFilter filter = new GroovyFileFilter();
+			GroovyFileFilter filter = new GroovyFileFilter();
 
-            assertFalse(filter.accept(nonGroovyFile, "file.mikey"));
-            assertTrue(filter.accept(groovyFile, "file.groovy"));
+			assertFalse(filter.accept(nonGroovyFile, "file.mikey"));
+			assertTrue(filter.accept(groovyFile, "file.groovy"));
 
-        }
-    }
+		}
+	}
 }

@@ -1,4 +1,4 @@
-rootProject.name='zuul'
+rootProject.name = 'zuul'
 
 include 'zuul-core'
 include 'zuul-sample'

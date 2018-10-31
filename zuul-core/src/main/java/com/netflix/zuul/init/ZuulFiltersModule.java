@@ -43,91 +43,90 @@ import java.util.stream.Stream;
  * Time: 6:15 PM
  */
 public class ZuulFiltersModule extends AbstractModule {
-    private static final Logger LOG = LoggerFactory.getLogger(ZuulFiltersModule.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ZuulFiltersModule.class);
 
-    private static Predicate<String> blank = String::isEmpty;
+	private static Predicate<String> blank = String::isEmpty;
 
-    @Override
-    protected void configure() {
-        LOG.info("Starting Groovy Filter file manager");
+	@Override
+	protected void configure() {
+		LOG.info("Starting Groovy Filter file manager");
 
-        bind(DynamicCodeCompiler.class).to(GroovyCompiler.class);
-        bind(FilterFactory.class).to(GuiceFilterFactory.class);
+		bind(DynamicCodeCompiler.class).to(GroovyCompiler.class);
+		bind(FilterFactory.class).to(GuiceFilterFactory.class);
 
-        bind(FilterUsageNotifier.class).to(BasicFilterUsageNotifier.class);
+		bind(FilterUsageNotifier.class).to(BasicFilterUsageNotifier.class);
 
-        LOG.info("Groovy Filter file manager started");
-    }
+		LOG.info("Groovy Filter file manager started");
+	}
 
-    @Provides
-    FilterFileManagerConfig provideFilterFileManagerConfig() {
-        // Get filter directories.
-        final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
+	@Provides
+	FilterFileManagerConfig provideFilterFileManagerConfig() {
+		// Get filter directories.
+		final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
 
-        String[] filterLocations = findFilterLocations(config);
-        String[] filterClassNames = findClassNames(config);
+		String[] filterLocations = findFilterLocations(config);
+		String[] filterClassNames = findClassNames(config);
 
-        // Init the FilterStore.
-        FilterFileManagerConfig filterConfig = new FilterFileManagerConfig(filterLocations, filterClassNames, 5);
-        return filterConfig;
-    }
+		// Init the FilterStore.
+		FilterFileManagerConfig filterConfig = new FilterFileManagerConfig(filterLocations, filterClassNames, 5);
+		return filterConfig;
+	}
 
-    // Get compiled filter classes to be found on classpath.
-    @VisibleForTesting
-    String[] findClassNames(AbstractConfiguration config) {
+	// Get compiled filter classes to be found on classpath.
+	@VisibleForTesting
+	String[] findClassNames(AbstractConfiguration config) {
 
-        // Find individually-specified filter classes.
-        String[] filterClassNamesStrArray = config.getStringArray("zuul.filters.classes");
-        Stream<String> classNameStream = Arrays.stream(filterClassNamesStrArray)
-                .map(String::trim)
-                .filter(blank.negate());
+		// Find individually-specified filter classes.
+		String[] filterClassNamesStrArray = config.getStringArray("zuul.filters.classes");
+		Stream<String> classNameStream = Arrays.stream(filterClassNamesStrArray)
+				.map(String::trim)
+				.filter(blank.negate());
 
-        // Find filter classes in specified packages.
-        String[] packageNamesStrArray = config.getStringArray("zuul.filters.packages");
-        ClassPath cp;
-        try {
-            cp = ClassPath.from(this.getClass().getClassLoader());
-        }
-        catch (IOException e) {
-            throw new RuntimeException("Error attempting to read classpath to find filters!", e);
-        }
-        Stream<String> packageStream = Arrays.stream(packageNamesStrArray)
-                .map(String::trim)
-                .filter(blank.negate())
-                .flatMap(packageName -> cp.getTopLevelClasses(packageName).stream())
-                .map(ClassPath.ClassInfo::load)
-                .filter(ZuulFilter.class::isAssignableFrom)
-                .map(Class::getCanonicalName);
+		// Find filter classes in specified packages.
+		String[] packageNamesStrArray = config.getStringArray("zuul.filters.packages");
+		ClassPath cp;
+		try {
+			cp = ClassPath.from(this.getClass().getClassLoader());
+		} catch (IOException e) {
+			throw new RuntimeException("Error attempting to read classpath to find filters!", e);
+		}
+		Stream<String> packageStream = Arrays.stream(packageNamesStrArray)
+				.map(String::trim)
+				.filter(blank.negate())
+				.flatMap(packageName -> cp.getTopLevelClasses(packageName).stream())
+				.map(ClassPath.ClassInfo::load)
+				.filter(ZuulFilter.class::isAssignableFrom)
+				.map(Class::getCanonicalName);
 
 
-        String[] filterClassNames = Stream.concat(classNameStream, packageStream).toArray(String[]::new);
-        if (filterClassNames.length != 0) {
-            LOG.info("Using filter classnames: ");
-            for (String location : filterClassNames) {
-                LOG.info("  " + location);
-            }
-        }
+		String[] filterClassNames = Stream.concat(classNameStream, packageStream).toArray(String[]::new);
+		if (filterClassNames.length != 0) {
+			LOG.info("Using filter classnames: ");
+			for (String location : filterClassNames) {
+				LOG.info("  " + location);
+			}
+		}
 
-        return filterClassNames;
-    }
+		return filterClassNames;
+	}
 
-    @VisibleForTesting
-    String[] findFilterLocations(AbstractConfiguration config) {
-        String[] locations = config.getStringArray("zuul.filters.locations");
-        if (locations == null) {
-            locations = new String[]{"inbound", "outbound", "endpoint"};
-        }
-        String[] filterLocations = Arrays.stream(locations)
-                .map(String::trim)
-                .filter(blank.negate())
-                .toArray(String[]::new);
+	@VisibleForTesting
+	String[] findFilterLocations(AbstractConfiguration config) {
+		String[] locations = config.getStringArray("zuul.filters.locations");
+		if (locations == null) {
+			locations = new String[]{"inbound", "outbound", "endpoint"};
+		}
+		String[] filterLocations = Arrays.stream(locations)
+				.map(String::trim)
+				.filter(blank.negate())
+				.toArray(String[]::new);
 
-        if (filterLocations.length != 0) {
-            LOG.info("Using filter locations: ");
-            for (String location : filterLocations) {
-                LOG.info("  " + location);
-            }
-        }
-        return filterLocations;
-    }
+		if (filterLocations.length != 0) {
+			LOG.info("Using filter locations: ");
+			for (String location : filterLocations) {
+				LOG.info("  " + location);
+			}
+		}
+		return filterLocations;
+	}
 }

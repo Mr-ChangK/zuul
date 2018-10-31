@@ -17,5 +17,5 @@
 package io.netty.handler.codec.http2;
 
 public interface Http2PushPromiseFrame extends Http2HeadersFrame {
-    int promisedStreamId();
+	int promisedStreamId();
 }

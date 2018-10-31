@@ -1,12 +1,12 @@
 /**
  * Copyright 2018 Netflix, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,28 +29,28 @@ import java.util.concurrent.ConcurrentMap;
 @Singleton
 public class PushConnectionRegistry {
 
-    private final ConcurrentMap<String, PushConnection> clientPushConnectionMap;
+	private final ConcurrentMap<String, PushConnection> clientPushConnectionMap;
 
-    @Inject
-    private PushConnectionRegistry() {
-        clientPushConnectionMap = new ConcurrentHashMap<>(1024 * 8);
-    }
+	@Inject
+	private PushConnectionRegistry() {
+		clientPushConnectionMap = new ConcurrentHashMap<>(1024 * 8);
+	}
 
-    public PushConnection get(final String clientId) {
-        return clientPushConnectionMap.get(clientId);
-    }
+	public PushConnection get(final String clientId) {
+		return clientPushConnectionMap.get(clientId);
+	}
 
-    public void put(final String clientId, final PushConnection pushConnection) {
-        clientPushConnectionMap.put(clientId, pushConnection);
-    }
+	public void put(final String clientId, final PushConnection pushConnection) {
+		clientPushConnectionMap.put(clientId, pushConnection);
+	}
 
-    public PushConnection remove(final String clientId) {
-        final PushConnection pc = clientPushConnectionMap.remove(clientId);
-        return pc;
-    }
+	public PushConnection remove(final String clientId) {
+		final PushConnection pc = clientPushConnectionMap.remove(clientId);
+		return pc;
+	}
 
-    public int size() {
-        return clientPushConnectionMap.size();
-    }
+	public int size() {
+		return clientPushConnectionMap.size();
+	}
 
 }

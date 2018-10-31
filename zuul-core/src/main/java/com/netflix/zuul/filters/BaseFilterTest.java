@@ -32,57 +32,55 @@ import static org.mockito.Mockito.when;
  * @author Mike Smith
  */
 @RunWith(MockitoJUnitRunner.class)
-public abstract class BaseFilterTest
-{
-    @Mock
-    protected HttpResponseMessage response;
-    @Mock
-    protected HttpRequestMessage request;
-    @Mock
-    protected HttpRequestInfo originalRequest;
-    @Mock
-    protected HttpResponseInfo originResponse;
+public abstract class BaseFilterTest {
+	@Mock
+	protected HttpResponseMessage response;
+	@Mock
+	protected HttpRequestMessage request;
+	@Mock
+	protected HttpRequestInfo originalRequest;
+	@Mock
+	protected HttpResponseInfo originResponse;
 
-    protected SessionContext context;
-    protected Headers originalRequestHeaders;
-    protected Headers requestHeaders;
-    protected HttpQueryParams requestParams;
-    protected Cookies requestCookies;
-    protected Headers originResponseHeaders;
-    protected Headers responseHeaders;
+	protected SessionContext context;
+	protected Headers originalRequestHeaders;
+	protected Headers requestHeaders;
+	protected HttpQueryParams requestParams;
+	protected Cookies requestCookies;
+	protected Headers originResponseHeaders;
+	protected Headers responseHeaders;
 
-    @Before
-    public void setup()
-    {
-        context = new SessionContext();
+	@Before
+	public void setup() {
+		context = new SessionContext();
 
-        when(request.getContext()).thenReturn(context);
-        when(response.getContext()).thenReturn(context);
-        when(request.getInboundRequest()).thenReturn(originalRequest);
-        when(response.getOutboundRequest()).thenReturn(request);
-        when(response.getInboundRequest()).thenReturn(originalRequest);
-        when(response.getInboundResponse()).thenReturn(originResponse);
+		when(request.getContext()).thenReturn(context);
+		when(response.getContext()).thenReturn(context);
+		when(request.getInboundRequest()).thenReturn(originalRequest);
+		when(response.getOutboundRequest()).thenReturn(request);
+		when(response.getInboundRequest()).thenReturn(originalRequest);
+		when(response.getInboundResponse()).thenReturn(originResponse);
 
-        originResponseHeaders = new Headers();
-        when(originResponse.getHeaders()).thenReturn(originResponseHeaders);
+		originResponseHeaders = new Headers();
+		when(originResponse.getHeaders()).thenReturn(originResponseHeaders);
 
-        originalRequestHeaders = new Headers();
-        requestHeaders = new Headers();
-        when(request.getHeaders()).thenReturn(requestHeaders);
-        when(originalRequest.getHeaders()).thenReturn(originalRequestHeaders);
+		originalRequestHeaders = new Headers();
+		requestHeaders = new Headers();
+		when(request.getHeaders()).thenReturn(requestHeaders);
+		when(originalRequest.getHeaders()).thenReturn(originalRequestHeaders);
 
-        requestParams = new HttpQueryParams();
-        when(request.getQueryParams()).thenReturn(requestParams);
-        when(originalRequest.getQueryParams()).thenReturn(requestParams);
+		requestParams = new HttpQueryParams();
+		when(request.getQueryParams()).thenReturn(requestParams);
+		when(originalRequest.getQueryParams()).thenReturn(requestParams);
 
-        requestCookies = new Cookies();
-        when(request.parseCookies()).thenReturn(requestCookies);
+		requestCookies = new Cookies();
+		when(request.parseCookies()).thenReturn(requestCookies);
 
-        responseHeaders = new Headers();
-        when(response.getHeaders()).thenReturn(responseHeaders);
-    }
+		responseHeaders = new Headers();
+		when(response.getHeaders()).thenReturn(responseHeaders);
+	}
 
-    protected void setRequestHost(String host) {
-        when(originalRequest.getOriginalHost()).thenReturn(host);
-    }
+	protected void setRequestHost(String host) {
+		when(originalRequest.getOriginalHost()).thenReturn(host);
+	}
 }

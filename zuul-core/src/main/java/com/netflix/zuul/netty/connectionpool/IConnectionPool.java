@@ -27,15 +27,21 @@ import java.util.concurrent.atomic.AtomicReference;
  * Date: 7/8/16
  * Time: 1:10 PM
  */
-public interface IConnectionPool
-{
-    Promise<PooledConnection> acquire(EventLoop eventLoop, Object key, String httpMethod, String uri,
-                                      int retryNum, CurrentPassport passport, AtomicReference<String> selectedHostAddr);
-    boolean release(PooledConnection conn);
-    boolean remove(PooledConnection conn);
-    void shutdown();
-    boolean isAvailable();
-    int getConnsInUse();
-    int getConnsInPool();
-    ConnectionPoolConfig getConfig();
+public interface IConnectionPool {
+	Promise<PooledConnection> acquire(EventLoop eventLoop, Object key, String httpMethod, String uri,
+									  int retryNum, CurrentPassport passport, AtomicReference<String> selectedHostAddr);
+
+	boolean release(PooledConnection conn);
+
+	boolean remove(PooledConnection conn);
+
+	void shutdown();
+
+	boolean isAvailable();
+
+	int getConnsInUse();
+
+	int getConnsInPool();
+
+	ConnectionPoolConfig getConfig();
 }

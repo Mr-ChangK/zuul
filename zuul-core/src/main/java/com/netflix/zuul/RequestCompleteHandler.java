@@ -18,8 +18,7 @@ package com.netflix.zuul;
 import com.netflix.zuul.message.http.HttpRequestInfo;
 import com.netflix.zuul.message.http.HttpResponseMessage;
 
-public interface RequestCompleteHandler
-{
-    void handle(HttpRequestInfo inboundRequest, HttpResponseMessage response);
+public interface RequestCompleteHandler {
+	void handle(HttpRequestInfo inboundRequest, HttpResponseMessage response);
 }
 

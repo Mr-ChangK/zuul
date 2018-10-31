@@ -29,7 +29,7 @@ import java.util.Set;
 
 /**
  * A modified copy of <a href="https://svn.code.sf.net/p/openutils/code/trunk/openutils-log4j/src/main/java/it/openutils/log4j/FilteredPatternLayout.java">FilteredPatternLayout</a>.
- *
+ * <p>
  * An extension of <code>org.apache.log4j.PatternLayout</code> which strips out from stack traces a list of configured
  * entries. Sample configuration:
  *
@@ -46,180 +46,165 @@ import java.util.Set;
  *
  * @author Fabrizio Giustina
  * @author Michael Smith
- *
  */
-public class FilteredPatternLayout extends PatternLayout
-{
+public class FilteredPatternLayout extends PatternLayout {
 
-    /**
-     * Holds the list of filtered frames.
-     */
-    private Set<String> filteredFrames = new HashSet<String>();
+	/**
+	 * Holds the list of filtered frames.
+	 */
+	private Set<String> filteredFrames = new HashSet<String>();
 
-    private String header;
+	private String header;
 
-    private String footer;
+	private String footer;
 
-    /**
-     * Line separator for stacktrace frames.
-     */
-    private static String lineSeparator = "\n";
+	/**
+	 * Line separator for stacktrace frames.
+	 */
+	private static String lineSeparator = "\n";
 
-    static
-    {
-        try
-        {
-            lineSeparator = System.getProperty("line.separator");
-        }
-        catch (SecurityException ex)
-        {
-            // ignore
-        }
-    }
+	static {
+		try {
+			lineSeparator = System.getProperty("line.separator");
+		} catch (SecurityException ex) {
+			// ignore
+		}
+	}
 
-    private static final String FILTERED_LINE_INDICATOR = "\t... filtered lines = ";
+	private static final String FILTERED_LINE_INDICATOR = "\t... filtered lines = ";
 
 
-    /**
-     * Returns the header.
-     * @return the header
-     */
-    @Override
-    public String getHeader()
-    {
-        return header;
-    }
+	/**
+	 * Returns the header.
+	 *
+	 * @return the header
+	 */
+	@Override
+	public String getHeader() {
+		return header;
+	}
 
-    /**
-     * Sets the header.
-     * @param header the header to set
-     */
-    public void setHeader(String header)
-    {
-        this.header = header;
-    }
+	/**
+	 * Sets the header.
+	 *
+	 * @param header the header to set
+	 */
+	public void setHeader(String header) {
+		this.header = header;
+	}
 
-    /**
-     * Returns the footer.
-     * @return the footer
-     */
-    @Override
-    public String getFooter()
-    {
-        return footer;
-    }
+	/**
+	 * Returns the footer.
+	 *
+	 * @return the footer
+	 */
+	@Override
+	public String getFooter() {
+		return footer;
+	}
 
-    /**
-     * Sets the footer.
-     * @param footer the footer to set
-     */
-    public void setFooter(String footer)
-    {
-        this.footer = footer;
-    }
+	/**
+	 * Sets the footer.
+	 *
+	 * @param footer the footer to set
+	 */
+	public void setFooter(String footer) {
+		this.footer = footer;
+	}
 
-    /**
-     * @see org.apache.log4j.Layout#ignoresThrowable()
-     */
-    @Override
-    public boolean ignoresThrowable()
-    {
-        return false;
-    }
+	/**
+	 * @see org.apache.log4j.Layout#ignoresThrowable()
+	 */
+	@Override
+	public boolean ignoresThrowable() {
+		return false;
+	}
 
-    /**
-     * @see PatternLayout#format(LoggingEvent)
-     */
-    @Override
-    public String format(LoggingEvent event)
-    {
-        String result = super.format(event);
+	/**
+	 * @see PatternLayout#format(LoggingEvent)
+	 */
+	@Override
+	public String format(LoggingEvent event) {
+		String result = super.format(event);
 
-        ThrowableInformation throwableInformation = event.getThrowableInformation();
+		ThrowableInformation throwableInformation = event.getThrowableInformation();
 
-        if (throwableInformation != null)
-        {
-            result += getFilteredStacktrace(throwableInformation);
-        }
+		if (throwableInformation != null) {
+			result += getFilteredStacktrace(throwableInformation);
+		}
 
-        return result;
-    }
+		return result;
+	}
 
-    /**
-     * Adds new filtered frames. Any stack frame starting with <code>"at "</code> + <code>filter</code> will not be
-     * written to the log.
-     * @param filters a comma-delimited list of class names or package names to be filtered
-     */
-    public void setFilters(String filters)
-    {
-        for (String filter : filters.split(",")) {
-            filteredFrames.add("at " + filter.trim());
-        }
-    }
+	/**
+	 * Adds new filtered frames. Any stack frame starting with <code>"at "</code> + <code>filter</code> will not be
+	 * written to the log.
+	 *
+	 * @param filters a comma-delimited list of class names or package names to be filtered
+	 */
+	public void setFilters(String filters) {
+		for (String filter : filters.split(",")) {
+			filteredFrames.add("at " + filter.trim());
+		}
+	}
 
 
-    private String getFilteredStacktrace(ThrowableInformation throwableInformation)
-    {
-        StringBuffer buffer = new StringBuffer();
+	private String getFilteredStacktrace(ThrowableInformation throwableInformation) {
+		StringBuffer buffer = new StringBuffer();
 
-        String[] s = throwableInformation.getThrowableStrRep();
+		String[] s = throwableInformation.getThrowableStrRep();
 
-        boolean previousLineWasAMatch = false;
-        int consecutiveFilteredCount = 0;
-        for (int j = 0; j < s.length; j++)
-        {
-            String string = s[j];
-            boolean shouldAppend = true;
+		boolean previousLineWasAMatch = false;
+		int consecutiveFilteredCount = 0;
+		for (int j = 0; j < s.length; j++) {
+			String string = s[j];
+			boolean shouldAppend = true;
 
-            if (startsWithAFilteredPAttern(string)) {
-                shouldAppend = false;
-                previousLineWasAMatch = true;
-                consecutiveFilteredCount++;
-            }
-            else {
-                appendFilteredLineIndicator(buffer, previousLineWasAMatch, consecutiveFilteredCount);
-                consecutiveFilteredCount = 0;
-                previousLineWasAMatch = false;
-            }
+			if (startsWithAFilteredPAttern(string)) {
+				shouldAppend = false;
+				previousLineWasAMatch = true;
+				consecutiveFilteredCount++;
+			} else {
+				appendFilteredLineIndicator(buffer, previousLineWasAMatch, consecutiveFilteredCount);
+				consecutiveFilteredCount = 0;
+				previousLineWasAMatch = false;
+			}
 
-            if (shouldAppend) {
-                buffer.append(string);
-                buffer.append(lineSeparator);
-            }
-        }
+			if (shouldAppend) {
+				buffer.append(string);
+				buffer.append(lineSeparator);
+			}
+		}
 
-        // In case consecutive filtered lines run to end of trace.
-        appendFilteredLineIndicator(buffer, previousLineWasAMatch, consecutiveFilteredCount);
+		// In case consecutive filtered lines run to end of trace.
+		appendFilteredLineIndicator(buffer, previousLineWasAMatch, consecutiveFilteredCount);
 
-        return buffer.toString();
-    }
+		return buffer.toString();
+	}
 
-    private void appendFilteredLineIndicator(StringBuffer buffer, boolean previousLineWasAMatch, int consecutiveFilteredCount)
-    {
-        // For the last consecutive filtered line, append some indication that lines have been filtered.
-        if (previousLineWasAMatch) {
-            buffer.append(FILTERED_LINE_INDICATOR).append(consecutiveFilteredCount);
-            buffer.append(lineSeparator);
-        }
-    }
+	private void appendFilteredLineIndicator(StringBuffer buffer, boolean previousLineWasAMatch, int consecutiveFilteredCount) {
+		// For the last consecutive filtered line, append some indication that lines have been filtered.
+		if (previousLineWasAMatch) {
+			buffer.append(FILTERED_LINE_INDICATOR).append(consecutiveFilteredCount);
+			buffer.append(lineSeparator);
+		}
+	}
 
-    /**
-     * Check if the given string starts with any of the filtered patterns.
-     * @param string checked String
-     * @return <code>true</code> if the begininning of the string matches a filtered pattern, <code>false</code>
-     * otherwise
-     */
-    private boolean startsWithAFilteredPAttern(String string)
-    {
-        Iterator<String> iterator = filteredFrames.iterator();
-        while (iterator.hasNext())
-        {
-            if (string.trim().startsWith(iterator.next()))
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+	/**
+	 * Check if the given string starts with any of the filtered patterns.
+	 *
+	 * @param string checked String
+	 * @return <code>true</code> if the begininning of the string matches a filtered pattern, <code>false</code>
+	 * otherwise
+	 */
+	private boolean startsWithAFilteredPAttern(String string) {
+		Iterator<String> iterator = filteredFrames.iterator();
+		while (iterator.hasNext()) {
+			if (string.trim().startsWith(iterator.next())) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

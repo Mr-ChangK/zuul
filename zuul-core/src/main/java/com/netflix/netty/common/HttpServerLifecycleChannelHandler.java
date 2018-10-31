@@ -29,94 +29,83 @@ import io.netty.handler.codec.http.LastHttpContent;
 /**
  * @author michaels
  */
-public class HttpServerLifecycleChannelHandler extends HttpLifecycleChannelHandler
-{
-    public HttpServerLifecycleChannelHandler()
-    {
-        super(new HttpServerLifecycleInboundChannelHandler(), new HttpServerLifecycleOutboundChannelHandler());
-    }
+public class HttpServerLifecycleChannelHandler extends HttpLifecycleChannelHandler {
+	public HttpServerLifecycleChannelHandler() {
+		super(new HttpServerLifecycleInboundChannelHandler(), new HttpServerLifecycleOutboundChannelHandler());
+	}
 
-    private static class HttpServerLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter
-    {
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-        {
-            if (msg instanceof HttpRequest) {
-                // Fire start event, and if that succeeded, then allow processing to 
-                // continue to next handler in pipeline.
-                if (fireStartEvent(ctx, (HttpRequest) msg)) {
-                    super.channelRead(ctx, msg);
-                }
-            }
-            else {
-                super.channelRead(ctx, msg);
-            }
-        }
+	private static class HttpServerLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter {
+		@Override
+		public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+			if (msg instanceof HttpRequest) {
+				// Fire start event, and if that succeeded, then allow processing to
+				// continue to next handler in pipeline.
+				if (fireStartEvent(ctx, (HttpRequest) msg)) {
+					super.channelRead(ctx, msg);
+				}
+			} else {
+				super.channelRead(ctx, msg);
+			}
+		}
 
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception
-        {
-            fireCompleteEventIfNotAlready(ctx, CompleteReason.INACTIVE);
+		@Override
+		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+			fireCompleteEventIfNotAlready(ctx, CompleteReason.INACTIVE);
 
-            super.channelInactive(ctx);
-        }
+			super.channelInactive(ctx);
+		}
 
-    }
+	}
 
-    private static class HttpServerLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter
-    {
-        @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-        {
-            if (msg instanceof HttpResponse) {
-                ctx.channel().attr(ATTR_HTTP_RESP).set((HttpResponse) msg);
-            }
-            
-            try {
-                super.write(ctx, msg, promise);
-            }
-            finally {
-                if (msg instanceof LastHttpContent) {
+	private static class HttpServerLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter {
+		@Override
+		public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+			if (msg instanceof HttpResponse) {
+				ctx.channel().attr(ATTR_HTTP_RESP).set((HttpResponse) msg);
+			}
 
-                    boolean dontFireCompleteYet = false;
-                    if (msg instanceof HttpResponse) {
-                        // Handle case of 100 CONTINUE, where server sends an initial 100 status response to indicate to client
-                        // that it can continue sending the initial request body.
-                        // ie. in this case we don't want to consider the state to be COMPLETE until after the 2nd response.
-                        if (((HttpResponse) msg).status() == HttpResponseStatus.CONTINUE) {
-                            dontFireCompleteYet = true;
-                        }
-                    }
+			try {
+				super.write(ctx, msg, promise);
+			} finally {
+				if (msg instanceof LastHttpContent) {
 
-                    if (!dontFireCompleteYet)
-                        if (promise.isDone()) {
-                            fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
-                        } else {
-                            promise.addListener(future -> {
-                                fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
-                            });
-                        }
-                }
-            }
-        }
+					boolean dontFireCompleteYet = false;
+					if (msg instanceof HttpResponse) {
+						// Handle case of 100 CONTINUE, where server sends an initial 100 status response to indicate to client
+						// that it can continue sending the initial request body.
+						// ie. in this case we don't want to consider the state to be COMPLETE until after the 2nd response.
+						if (((HttpResponse) msg).status() == HttpResponseStatus.CONTINUE) {
+							dontFireCompleteYet = true;
+						}
+					}
 
-        @Override
-        public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-        {
-            fireCompleteEventIfNotAlready(ctx, CompleteReason.DISCONNECT);
+					if (!dontFireCompleteYet)
+						if (promise.isDone()) {
+							fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
+						} else {
+							promise.addListener(future -> {
+								fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
+							});
+						}
+				}
+			}
+		}
 
-            super.disconnect(ctx, promise);
-        }
+		@Override
+		public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+			fireCompleteEventIfNotAlready(ctx, CompleteReason.DISCONNECT);
 
-        @Override
-        public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-        {
-            addPassportState(ctx, PassportState.SERVER_CH_CLOSE);
-            
-            fireCompleteEventIfNotAlready(ctx, CompleteReason.CLOSE);
+			super.disconnect(ctx, promise);
+		}
 
-            super.close(ctx, promise);
-        }
+		@Override
+		public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+			addPassportState(ctx, PassportState.SERVER_CH_CLOSE);
 
-    }
+			fireCompleteEventIfNotAlready(ctx, CompleteReason.CLOSE);
+
+			super.close(ctx, promise);
+		}
+
+	}
 }

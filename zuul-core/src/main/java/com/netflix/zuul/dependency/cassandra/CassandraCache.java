@@ -20,8 +20,8 @@ package com.netflix.zuul.dependency.cassandra;
  */
 public interface CassandraCache<K> {
 
-    K fetchQuery(String... keys);
+	K fetchQuery(String... keys);
 
-    void storeQuery(K response, String... keys);
+	void storeQuery(K response, String... keys);
 
 }

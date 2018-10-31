@@ -20,63 +20,55 @@ import com.netflix.config.DynamicPropertyFactory;
 
 /**
  * Immutable, case-insensitive wrapper around Header name.
- *
+ * <p>
  * User: Mike Smith
  * Date: 7/29/15
  * Time: 1:07 PM
  */
-public class HeaderName
-{
-    private static final boolean SHOULD_INTERN =
-            DynamicPropertyFactory.getInstance().getBooleanProperty(
-                    "com.netflix.zuul.message.HeaderName.shouldIntern", true).get();
+public class HeaderName {
+	private static final boolean SHOULD_INTERN =
+			DynamicPropertyFactory.getInstance().getBooleanProperty(
+					"com.netflix.zuul.message.HeaderName.shouldIntern", true).get();
 
-    private final String name;
-    private final String normalised;
+	private final String name;
+	private final String normalised;
 
-    public HeaderName(String name)
-    {
-        if (name == null) throw new NullPointerException("HeaderName cannot be null!");
-        this.name = SHOULD_INTERN ? name.intern() : name;
-        this.normalised = SHOULD_INTERN ? name.toLowerCase().intern() : name.toLowerCase();
-    }
+	public HeaderName(String name) {
+		if (name == null) throw new NullPointerException("HeaderName cannot be null!");
+		this.name = SHOULD_INTERN ? name.intern() : name;
+		this.normalised = SHOULD_INTERN ? name.toLowerCase().intern() : name.toLowerCase();
+	}
 
-    public String getName()
-    {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getNormalised()
-    {
-        return normalised;
-    }
+	public String getNormalised() {
+		return normalised;
+	}
 
-    @Override
-    public boolean equals(Object o)
-    {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
 
-        HeaderName that = (HeaderName) o;
+		HeaderName that = (HeaderName) o;
 
-        // Ignore case when comparing.
-        if (SHOULD_INTERN) {
-            return normalised == that.normalised;
-        }
-        else {
-            return normalised.equals(that.normalised);
-        }
-    }
+		// Ignore case when comparing.
+		if (SHOULD_INTERN) {
+			return normalised == that.normalised;
+		} else {
+			return normalised.equals(that.normalised);
+		}
+	}
 
-    @Override
-    public int hashCode()
-    {
-        return normalised.hashCode();
-    }
+	@Override
+	public int hashCode() {
+		return normalised.hashCode();
+	}
 
-    @Override
-    public String toString()
-    {
-        return name;
-    }
+	@Override
+	public String toString() {
+		return name;
+	}
 }

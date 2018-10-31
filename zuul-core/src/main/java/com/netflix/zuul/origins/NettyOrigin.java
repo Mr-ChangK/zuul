@@ -34,45 +34,45 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Netty Origin interface for integrating cleanly with the ProxyEndpoint state management class.
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: November 29, 2017
  */
 public interface NettyOrigin extends InstrumentedOrigin {
 
-    Promise<PooledConnection> connectToOrigin(final HttpRequestMessage zuulReq, EventLoop eventLoop,
-                                              int attemptNumber, CurrentPassport passport,
-                                              AtomicReference<Server> chosenServer,
-                                              AtomicReference<String> chosenHostAddr);
+	Promise<PooledConnection> connectToOrigin(final HttpRequestMessage zuulReq, EventLoop eventLoop,
+											  int attemptNumber, CurrentPassport passport,
+											  AtomicReference<Server> chosenServer,
+											  AtomicReference<String> chosenHostAddr);
 
-    Timing getProxyTiming(HttpRequestMessage zuulReq);
+	Timing getProxyTiming(HttpRequestMessage zuulReq);
 
-    int getMaxRetriesForRequest(SessionContext context);
+	int getMaxRetriesForRequest(SessionContext context);
 
-    void onRequestExecutionStart(final HttpRequestMessage zuulReq);
+	void onRequestExecutionStart(final HttpRequestMessage zuulReq);
 
-    void onRequestStartWithServer(final HttpRequestMessage zuulReq, final Server originServer, int attemptNum);
+	void onRequestStartWithServer(final HttpRequestMessage zuulReq, final Server originServer, int attemptNum);
 
-    void onRequestExceptionWithServer(final HttpRequestMessage zuulReq, final Server originServer,
-                                      final int attemptNum, Throwable t);
+	void onRequestExceptionWithServer(final HttpRequestMessage zuulReq, final Server originServer,
+									  final int attemptNum, Throwable t);
 
-    void onRequestExecutionSuccess(final HttpRequestMessage zuulReq, final HttpResponseMessage zuulResp,
-                                   final Server originServer, final int attemptNum);
+	void onRequestExecutionSuccess(final HttpRequestMessage zuulReq, final HttpResponseMessage zuulResp,
+								   final Server originServer, final int attemptNum);
 
-    void onRequestExecutionFailed(final HttpRequestMessage zuulReq, final Server originServer,
-                                  final int attemptNum, Throwable t);
+	void onRequestExecutionFailed(final HttpRequestMessage zuulReq, final Server originServer,
+								  final int attemptNum, Throwable t);
 
-    void recordFinalError(final HttpRequestMessage requestMsg, final Throwable throwable);
+	void recordFinalError(final HttpRequestMessage requestMsg, final Throwable throwable);
 
-    void recordFinalResponse(final HttpResponseMessage resp);
+	void recordFinalResponse(final HttpResponseMessage resp);
 
-    RequestAttempt newRequestAttempt(final Server server, final SessionContext zuulCtx, int attemptNum);
+	RequestAttempt newRequestAttempt(final Server server, final SessionContext zuulCtx, int attemptNum);
 
-    String getIpAddrFromServer(Server server);
+	String getIpAddrFromServer(Server server);
 
-    IClientConfig getClientConfig();
+	IClientConfig getClientConfig();
 
-    Registry getSpectatorRegistry();
+	Registry getSpectatorRegistry();
 
-    ExecutionContext<?> getExecutionContext(HttpRequestMessage zuulRequest);
+	ExecutionContext<?> getExecutionContext(HttpRequestMessage zuulRequest);
 }

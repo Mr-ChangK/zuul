@@ -21,35 +21,30 @@ import com.netflix.zuul.passport.PassportState;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
-public class PassportStateListener implements GenericFutureListener
-{
-    private final CurrentPassport passport;
-    private final PassportState successState;
-    private final PassportState failState;
+public class PassportStateListener implements GenericFutureListener {
+	private final CurrentPassport passport;
+	private final PassportState successState;
+	private final PassportState failState;
 
-    public PassportStateListener(CurrentPassport passport, PassportState successState)
-    {
-        this.passport = passport;
-        this.successState = successState;
-        this.failState = null;
-    }
-    
-    public PassportStateListener(CurrentPassport passport, PassportState successState, PassportState failState)
-    {
-        this.passport = passport;
-        this.successState = successState;
-        this.failState = failState;
-    }
+	public PassportStateListener(CurrentPassport passport, PassportState successState) {
+		this.passport = passport;
+		this.successState = successState;
+		this.failState = null;
+	}
 
-    @Override
-    public void operationComplete(Future future) throws Exception
-    {
-        if (future.isSuccess()) {
-            passport.add(successState);
-        }
-        else {
-            if (failState != null)
-                passport.add(failState);
-        }
-    }
+	public PassportStateListener(CurrentPassport passport, PassportState successState, PassportState failState) {
+		this.passport = passport;
+		this.successState = successState;
+		this.failState = failState;
+	}
+
+	@Override
+	public void operationComplete(Future future) throws Exception {
+		if (future.isSuccess()) {
+			passport.add(successState);
+		} else {
+			if (failState != null)
+				passport.add(failState);
+		}
+	}
 }

@@ -27,93 +27,80 @@ import io.netty.handler.codec.http.LastHttpContent;
 /**
  * @author michaels
  */
-public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandler
-{
-    private static final HttpClientLifecycleInboundChannelHandler INBOUND_CHANNEL_HANDLER = new HttpClientLifecycleInboundChannelHandler();
-    private static final HttpClientLifecycleOutboundChannelHandler OUTBOUND_CHANNEL_HANDLER = new HttpClientLifecycleOutboundChannelHandler();
+public class HttpClientLifecycleChannelHandler extends HttpLifecycleChannelHandler {
+	private static final HttpClientLifecycleInboundChannelHandler INBOUND_CHANNEL_HANDLER = new HttpClientLifecycleInboundChannelHandler();
+	private static final HttpClientLifecycleOutboundChannelHandler OUTBOUND_CHANNEL_HANDLER = new HttpClientLifecycleOutboundChannelHandler();
 
-    public HttpClientLifecycleChannelHandler()
-    {
-        super(INBOUND_CHANNEL_HANDLER, OUTBOUND_CHANNEL_HANDLER);
-    }
+	public HttpClientLifecycleChannelHandler() {
+		super(INBOUND_CHANNEL_HANDLER, OUTBOUND_CHANNEL_HANDLER);
+	}
 
 
-    @Sharable
-    private static class HttpClientLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter
-    {
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-        {
-            if (msg instanceof HttpResponse) {
-                ctx.channel().attr(ATTR_HTTP_RESP).set((HttpResponse) msg);
-            }
+	@Sharable
+	private static class HttpClientLifecycleInboundChannelHandler extends ChannelInboundHandlerAdapter {
+		@Override
+		public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+			if (msg instanceof HttpResponse) {
+				ctx.channel().attr(ATTR_HTTP_RESP).set((HttpResponse) msg);
+			}
 
-            try {
-                super.channelRead(ctx, msg);
-            }
-            finally {
-                if (msg instanceof LastHttpContent) {
-                    fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
-                }
-            }
-        }
+			try {
+				super.channelRead(ctx, msg);
+			} finally {
+				if (msg instanceof LastHttpContent) {
+					fireCompleteEventIfNotAlready(ctx, CompleteReason.SESSION_COMPLETE);
+				}
+			}
+		}
 
-        @Override
-        public void channelInactive(ChannelHandlerContext ctx) throws Exception
-        {
-            try {
-                super.channelInactive(ctx);
-            }
-            finally {
-                fireCompleteEventIfNotAlready(ctx, CompleteReason.INACTIVE);
-            }
-        }
+		@Override
+		public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+			try {
+				super.channelInactive(ctx);
+			} finally {
+				fireCompleteEventIfNotAlready(ctx, CompleteReason.INACTIVE);
+			}
+		}
 
-    }
+	}
 
-    @Sharable
-    private static class HttpClientLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter
-    {
-        @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-        {
-            if (msg instanceof HttpRequest) {
-                fireStartEvent(ctx, (HttpRequest) msg);
-            }
+	@Sharable
+	private static class HttpClientLifecycleOutboundChannelHandler extends ChannelOutboundHandlerAdapter {
+		@Override
+		public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+			if (msg instanceof HttpRequest) {
+				fireStartEvent(ctx, (HttpRequest) msg);
+			}
 
-            super.write(ctx, msg, promise);
-        }
+			super.write(ctx, msg, promise);
+		}
 
-        @Override
-        public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-        {
-            fireCompleteEventIfNotAlready(ctx, CompleteReason.DISCONNECT);
+		@Override
+		public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+			fireCompleteEventIfNotAlready(ctx, CompleteReason.DISCONNECT);
 
-            super.disconnect(ctx, promise);
-        }
+			super.disconnect(ctx, promise);
+		}
 
-        @Override
-        public void deregister(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-        {
-            fireCompleteEventIfNotAlready(ctx, CompleteReason.DEREGISTER);
+		@Override
+		public void deregister(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+			fireCompleteEventIfNotAlready(ctx, CompleteReason.DEREGISTER);
 
-            super.deregister(ctx, promise);
-        }
+			super.deregister(ctx, promise);
+		}
 
-        @Override
-        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception
-        {
-            super.exceptionCaught(ctx, cause);
+		@Override
+		public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+			super.exceptionCaught(ctx, cause);
 
-            fireCompleteEventIfNotAlready(ctx, CompleteReason.EXCEPTION);
-        }
+			fireCompleteEventIfNotAlready(ctx, CompleteReason.EXCEPTION);
+		}
 
-        @Override
-        public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception
-        {
-            fireCompleteEventIfNotAlready(ctx, CompleteReason.CLOSE);
+		@Override
+		public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+			fireCompleteEventIfNotAlready(ctx, CompleteReason.CLOSE);
 
-            super.close(ctx, promise);
-        }
-    }
+			super.close(ctx, promise);
+		}
+	}
 }

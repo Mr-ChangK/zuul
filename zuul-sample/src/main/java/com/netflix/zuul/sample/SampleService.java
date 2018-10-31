@@ -24,25 +24,25 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Sample Service for demonstration in SampleServiceFilter.
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: January 04, 2018
  */
 @Singleton
 public class SampleService {
 
-    private final AtomicBoolean status;
+	private final AtomicBoolean status;
 
-    public SampleService() {
-        // change to true for demo
-        this.status = new AtomicBoolean(false);
-    }
+	public SampleService() {
+		// change to true for demo
+		this.status = new AtomicBoolean(false);
+	}
 
-    public boolean isHealthy() {
-        return status.get();
-    }
+	public boolean isHealthy() {
+		return status.get();
+	}
 
-    public Observable<String> makeSlowRequest() {
-        return Observable.just("test").delay(500, TimeUnit.MILLISECONDS);
-    }
+	public Observable<String> makeSlowRequest() {
+		return Observable.just("test").delay(500, TimeUnit.MILLISECONDS);
+	}
 }

@@ -37,60 +37,61 @@ import static com.netflix.zuul.constants.ZuulConstants.*;
  * @author Raju Uppalapati
  */
 public class CassandraHelper {
-    
-    private static Logger LOG = LoggerFactory.getLogger(CassandraHelper.class);
-    private static Keyspace zuulCassKeyspace;
 
-    private CassandraHelper() {}
+	private static Logger LOG = LoggerFactory.getLogger(CassandraHelper.class);
+	private static Keyspace zuulCassKeyspace;
 
-    public static CassandraHelper getInstance() {
-        return CassandraHelperSingletonHolder.instance;
-    }
-    
-    private static class CassandraHelperSingletonHolder {
-        static final CassandraHelper instance = new CassandraHelper();
-    }
-    
-    /**
-     * @return the Keyspace for the Zuul Cassandra cluster which stores filters
-     * @throws Exception
-     */
-    public Keyspace getZuulCassKeyspace() throws Exception {
-        if (zuulCassKeyspace != null) return zuulCassKeyspace;
-        try {
-            setAstynaxConfiguration(ConfigurationManager.getConfigInstance());
+	private CassandraHelper() {
+	}
 
-            AstyanaxContext<Keyspace> context = new AstyanaxContext.Builder()
-                    .forKeyspace(DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_CASSANDRA_KEYSPACE, "zuul_scripts").get())
-                    .withAstyanaxConfiguration(new AstyanaxConfigurationImpl()
-                            .setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
-                    )
-                    .withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("cass_connection_pool")
-                            .setPort(DynamicPropertyFactory.getInstance().getIntProperty(ZUUL_CASSANDRA_PORT, 7102).get())
-                            .setMaxConnsPerHost(DynamicPropertyFactory.getInstance().getIntProperty(ZUUL_CASSANDRA_MAXCONNECTIONSPERHOST, 1).get())
-                            .setSeeds(DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_CASSANDRA_HOST, "").get() + ":" +
-                                    DynamicPropertyFactory.getInstance().getIntProperty(ZUUL_CASSANDRA_PORT, 7102).get()
-                            )
-                    )
-                    .withConnectionPoolMonitor(new CountingConnectionPoolMonitor())
-                    .buildKeyspace(ThriftFamilyFactory.getInstance());
+	public static CassandraHelper getInstance() {
+		return CassandraHelperSingletonHolder.instance;
+	}
 
-            context.start();
-            zuulCassKeyspace = context.getClient();
-            return zuulCassKeyspace;
-        } catch (Exception e) {
-            LOG.error("Exception occurred when initializing Cassandra keyspace: " + e);
-            throw e;
-        }
-    }
-    
-    private void setAstynaxConfiguration(AbstractConfiguration configuration) {
-        configuration.setProperty(DEFAULT_NFASTYANAX_READCONSISTENCY, DynamicPropertyFactory.getInstance().getStringProperty(DEFAULT_NFASTYANAX_READCONSISTENCY, "CL_ONE").get());
-        configuration.setProperty(DEFAULT_NFASTYANAX_WRITECONSISTENCY, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.writeConsistency", "CL_ONE").get());
-        configuration.setProperty(DEFAULT_NFASTYANAX_SOCKETTIMEOUT, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.socketTimeout", "2000").get());
-        configuration.setProperty(DEFAULT_NFASTYANAX_MAXCONNSPERHOST, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.maxConnsPerHost", "3").get());
-        configuration.setProperty(DEFAULT_NFASTYANAX_MAXTIMEOUTWHENEXHAUSTED, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.maxTimeoutWhenExhausted", "2000").get());
-        configuration.setProperty(DEFAULT_NFASTYANAX_MAXFAILOVERCOUNT, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.maxFailoverCount", "1").get());
-        configuration.setProperty(DEFAULT_NFASTYANAX_FAILOVERWAITTIME, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.failoverWaitTime", "0").get());
-    }
+	private static class CassandraHelperSingletonHolder {
+		static final CassandraHelper instance = new CassandraHelper();
+	}
+
+	/**
+	 * @return the Keyspace for the Zuul Cassandra cluster which stores filters
+	 * @throws Exception
+	 */
+	public Keyspace getZuulCassKeyspace() throws Exception {
+		if (zuulCassKeyspace != null) return zuulCassKeyspace;
+		try {
+			setAstynaxConfiguration(ConfigurationManager.getConfigInstance());
+
+			AstyanaxContext<Keyspace> context = new AstyanaxContext.Builder()
+					.forKeyspace(DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_CASSANDRA_KEYSPACE, "zuul_scripts").get())
+					.withAstyanaxConfiguration(new AstyanaxConfigurationImpl()
+							.setDiscoveryType(NodeDiscoveryType.RING_DESCRIBE)
+					)
+					.withConnectionPoolConfiguration(new ConnectionPoolConfigurationImpl("cass_connection_pool")
+							.setPort(DynamicPropertyFactory.getInstance().getIntProperty(ZUUL_CASSANDRA_PORT, 7102).get())
+							.setMaxConnsPerHost(DynamicPropertyFactory.getInstance().getIntProperty(ZUUL_CASSANDRA_MAXCONNECTIONSPERHOST, 1).get())
+							.setSeeds(DynamicPropertyFactory.getInstance().getStringProperty(ZUUL_CASSANDRA_HOST, "").get() + ":" +
+									DynamicPropertyFactory.getInstance().getIntProperty(ZUUL_CASSANDRA_PORT, 7102).get()
+							)
+					)
+					.withConnectionPoolMonitor(new CountingConnectionPoolMonitor())
+					.buildKeyspace(ThriftFamilyFactory.getInstance());
+
+			context.start();
+			zuulCassKeyspace = context.getClient();
+			return zuulCassKeyspace;
+		} catch (Exception e) {
+			LOG.error("Exception occurred when initializing Cassandra keyspace: " + e);
+			throw e;
+		}
+	}
+
+	private void setAstynaxConfiguration(AbstractConfiguration configuration) {
+		configuration.setProperty(DEFAULT_NFASTYANAX_READCONSISTENCY, DynamicPropertyFactory.getInstance().getStringProperty(DEFAULT_NFASTYANAX_READCONSISTENCY, "CL_ONE").get());
+		configuration.setProperty(DEFAULT_NFASTYANAX_WRITECONSISTENCY, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.writeConsistency", "CL_ONE").get());
+		configuration.setProperty(DEFAULT_NFASTYANAX_SOCKETTIMEOUT, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.socketTimeout", "2000").get());
+		configuration.setProperty(DEFAULT_NFASTYANAX_MAXCONNSPERHOST, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.maxConnsPerHost", "3").get());
+		configuration.setProperty(DEFAULT_NFASTYANAX_MAXTIMEOUTWHENEXHAUSTED, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.maxTimeoutWhenExhausted", "2000").get());
+		configuration.setProperty(DEFAULT_NFASTYANAX_MAXFAILOVERCOUNT, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.maxFailoverCount", "1").get());
+		configuration.setProperty(DEFAULT_NFASTYANAX_FAILOVERWAITTIME, DynamicPropertyFactory.getInstance().getStringProperty("zuul.cassandra.default.nfastyanax.failoverWaitTime", "0").get());
+	}
 }

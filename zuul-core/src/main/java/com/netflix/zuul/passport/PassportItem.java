@@ -16,30 +16,25 @@
 
 package com.netflix.zuul.passport;
 
-public class PassportItem
-{
-    private final long time;
-    private final PassportState state;
+public class PassportItem {
+	private final long time;
+	private final PassportState state;
 
-    public PassportItem(PassportState state, long time)
-    {
-        this.time = time;
-        this.state = state;
-    }
+	public PassportItem(PassportState state, long time) {
+		this.time = time;
+		this.state = state;
+	}
 
-    public long getTime()
-    {
-        return time;
-    }
+	public long getTime() {
+		return time;
+	}
 
-    public PassportState getState()
-    {
-        return state;
-    }
+	public PassportState getState() {
+		return state;
+	}
 
-    @Override
-    public String toString()
-    {
-        return time + "=" + state;
-    }
+	@Override
+	public String toString() {
+		return time + "=" + state;
+	}
 }

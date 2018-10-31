@@ -17,13 +17,15 @@ package com.netflix.zuul.stats.monitoring;
 
 /**
  * Interface for a named counter
+ *
  * @author Mikey Cohen
  * Date: 3/18/13
  * Time: 4:33 PM
  */
 public interface NamedCount {
 
-    public String getName();
-    public long getCount();
+	public String getName();
+
+	public long getCount();
 
 }

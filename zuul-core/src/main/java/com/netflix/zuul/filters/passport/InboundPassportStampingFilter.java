@@ -27,13 +27,13 @@ import static com.netflix.zuul.filters.FilterType.INBOUND;
  */
 public final class InboundPassportStampingFilter extends PassportStampingFilter<HttpRequestMessage> {
 
-    public InboundPassportStampingFilter(PassportState stamp) {
-        super(stamp);
-    }
+	public InboundPassportStampingFilter(PassportState stamp) {
+		super(stamp);
+	}
 
-    @Override
-    public FilterType filterType() {
-        return INBOUND;
-    }
+	@Override
+	public FilterType filterType() {
+		return INBOUND;
+	}
 
 }

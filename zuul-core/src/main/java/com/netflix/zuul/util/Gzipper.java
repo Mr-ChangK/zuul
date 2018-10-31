@@ -27,70 +27,65 @@ import java.util.zip.GZIPOutputStream;
 
 /**
  * Refactored this out of our GZipResponseFilter
- *
+ * <p>
  * User: michaels@netflix.com
  * Date: 5/10/16
  * Time: 12:31 PM
  */
-public class Gzipper
-{
-    private final ByteArrayOutputStream baos;
-    private final GZIPOutputStream gzos;
+public class Gzipper {
+	private final ByteArrayOutputStream baos;
+	private final GZIPOutputStream gzos;
 
-    public Gzipper() throws RuntimeException {
-        try {
-            baos = new ByteArrayOutputStream(256);
-            gzos = new GZIPOutputStream(baos, true);
-        }
-        catch (IOException e) {
-            throw new RuntimeException("Error finalizing the GzipOutputstream", e);
-        }
-    }
+	public Gzipper() throws RuntimeException {
+		try {
+			baos = new ByteArrayOutputStream(256);
+			gzos = new GZIPOutputStream(baos, true);
+		} catch (IOException e) {
+			throw new RuntimeException("Error finalizing the GzipOutputstream", e);
+		}
+	}
 
-    private void write(ByteBuf bb) throws IOException {
-        byte[] bytes;
-        int offset;
-        final int length = bb.readableBytes();
-        if (bb.hasArray()) {
-            /* avoid memory copy if possible */
-            bytes = bb.array();
-            offset = bb.arrayOffset();
-        } else {
-            bytes = new byte[length];
-            bb.getBytes(bb.readerIndex(), bytes);
-            offset = 0;
-        }
-        gzos.write(bytes, offset, length);
-    }
+	private void write(ByteBuf bb) throws IOException {
+		byte[] bytes;
+		int offset;
+		final int length = bb.readableBytes();
+		if (bb.hasArray()) {
+			/* avoid memory copy if possible */
+			bytes = bb.array();
+			offset = bb.arrayOffset();
+		} else {
+			bytes = new byte[length];
+			bb.getBytes(bb.readerIndex(), bytes);
+			offset = 0;
+		}
+		gzos.write(bytes, offset, length);
+	}
 
-    public void write(final HttpContent chunk) {
-        try {
-            write(chunk.content());
-            gzos.flush();
-        }
-        catch(IOException ioEx) {
-            throw new ZuulException(ioEx, "Error Gzipping response content chunk", true);
-        }
-        finally {
-            chunk.release();
-        }
-    }
+	public void write(final HttpContent chunk) {
+		try {
+			write(chunk.content());
+			gzos.flush();
+		} catch (IOException ioEx) {
+			throw new ZuulException(ioEx, "Error Gzipping response content chunk", true);
+		} finally {
+			chunk.release();
+		}
+	}
 
-    public void finish() throws RuntimeException {
-        try {
-            gzos.finish();
-            gzos.flush();
-            gzos.close();
-        }
-        catch (IOException ioEx) {
-            throw new ZuulException(ioEx, "Error finalizing the GzipOutputStream", true);
-        }
-    }
+	public void finish() throws RuntimeException {
+		try {
+			gzos.finish();
+			gzos.flush();
+			gzos.close();
+		} catch (IOException ioEx) {
+			throw new ZuulException(ioEx, "Error finalizing the GzipOutputStream", true);
+		}
+	}
 
-    public ByteBuf getByteBuf() {
-        final ByteBuf copy = Unpooled.copiedBuffer(baos.toByteArray());
-        baos.reset();
-        return copy;
-    }
+	public ByteBuf getByteBuf() {
+		final ByteBuf copy = Unpooled.copiedBuffer(baos.toByteArray());
+		baos.reset();
+		return copy;
+	}
 
 }

@@ -16,17 +16,17 @@
 
 package com.netflix.zuul.netty.connectionpool;
 
+import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
-import com.netflix.netty.common.metrics.HttpMetricsChannelHandler;
 
 /**
  * Origin Channel Initializer
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: December 01, 2017
  */
 public abstract class OriginChannelInitializer extends ChannelInitializer<Channel> {
 
-    public abstract HttpMetricsChannelHandler getHttpMetricsHandler();
+	public abstract HttpMetricsChannelHandler getHttpMetricsHandler();
 }

@@ -29,31 +29,30 @@ import java.util.concurrent.atomic.AtomicReference;
  * Date: 7/8/16
  * Time: 12:36 PM
  */
-public interface ClientChannelManager
-{
-    void init();
+public interface ClientChannelManager {
+	void init();
 
-    boolean isAvailable();
+	boolean isAvailable();
 
-    int getInflightRequestsCount();
+	int getInflightRequestsCount();
 
-    void shutdown();
+	void shutdown();
 
-    boolean release(PooledConnection conn);
+	boolean release(PooledConnection conn);
 
-    Promise<PooledConnection> acquire(EventLoop eventLoop);
+	Promise<PooledConnection> acquire(EventLoop eventLoop);
 
-    Promise<PooledConnection> acquire(EventLoop eventLoop, Object key, String httpMethod, String uri, int retryNum,
-                                      CurrentPassport passport, AtomicReference<Server> selectedServer,
-                                      AtomicReference<String> selectedHostAddr);
+	Promise<PooledConnection> acquire(EventLoop eventLoop, Object key, String httpMethod, String uri, int retryNum,
+									  CurrentPassport passport, AtomicReference<Server> selectedServer,
+									  AtomicReference<String> selectedHostAddr);
 
-    boolean isCold();
+	boolean isCold();
 
-    boolean remove(PooledConnection conn);
+	boolean remove(PooledConnection conn);
 
-    int getConnsInPool();
+	int getConnsInPool();
 
-    int getConnsInUse();
+	int getConnsInUse();
 
-    ConnectionPoolConfig getConfig();
+	ConnectionPoolConfig getConfig();
 }

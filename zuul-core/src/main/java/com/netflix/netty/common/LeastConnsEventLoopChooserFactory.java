@@ -33,71 +33,63 @@ import java.util.concurrent.ThreadLocalRandom;
  * Date: 2/7/17
  * Time: 2:44 PM
  */
-public class LeastConnsEventLoopChooserFactory implements EventExecutorChooserFactory
-{
-    private static final Logger LOG = LoggerFactory.getLogger(LeastConnsEventLoopChooserFactory.class);
-    private final EventLoopGroupMetrics groupMetrics;
+public class LeastConnsEventLoopChooserFactory implements EventExecutorChooserFactory {
+	private static final Logger LOG = LoggerFactory.getLogger(LeastConnsEventLoopChooserFactory.class);
+	private final EventLoopGroupMetrics groupMetrics;
 
-    public LeastConnsEventLoopChooserFactory(EventLoopGroupMetrics groupMetrics)
-    {
-        this.groupMetrics = groupMetrics;
-    }
+	public LeastConnsEventLoopChooserFactory(EventLoopGroupMetrics groupMetrics) {
+		this.groupMetrics = groupMetrics;
+	}
 
-    @Override
-    public EventExecutorChooser newChooser(EventExecutor[] executors)
-    {
-        return new LeastConnsEventExecutorChooser(executors, groupMetrics);
-    }
+	@Override
+	public EventExecutorChooser newChooser(EventExecutor[] executors) {
+		return new LeastConnsEventExecutorChooser(executors, groupMetrics);
+	}
 
-    private static class LeastConnsEventExecutorChooser implements EventExecutorChooser
-    {
-        private final List<EventExecutor> executors;
-        private final EventLoopGroupMetrics groupMetrics;
+	private static class LeastConnsEventExecutorChooser implements EventExecutorChooser {
+		private final List<EventExecutor> executors;
+		private final EventLoopGroupMetrics groupMetrics;
 
-        public LeastConnsEventExecutorChooser(EventExecutor[] executors, final EventLoopGroupMetrics groupMetrics)
-        {
-            this.executors = Arrays.asList(executors);
-            this.groupMetrics = groupMetrics;
-        }
+		public LeastConnsEventExecutorChooser(EventExecutor[] executors, final EventLoopGroupMetrics groupMetrics) {
+			this.executors = Arrays.asList(executors);
+			this.groupMetrics = groupMetrics;
+		}
 
-        @Override
-        public EventExecutor next()
-        {
-            return chooseWithLeastConns();
-        }
+		@Override
+		public EventExecutor next() {
+			return chooseWithLeastConns();
+		}
 
-        private EventExecutor chooseWithLeastConns()
-        {
-            EventExecutor leastExec = null;
-            int leastValue = Integer.MAX_VALUE;
-            
-            Map<Thread, Integer> connsPer = groupMetrics.connectionsPerEventLoop();
+		private EventExecutor chooseWithLeastConns() {
+			EventExecutor leastExec = null;
+			int leastValue = Integer.MAX_VALUE;
 
-            // Shuffle the list of executors each time so that if they all have the same number of connections, then
-            // we don't favour the 1st one.
-            Collections.shuffle(executors, ThreadLocalRandom.current());
-            
-            for (EventExecutor executor : executors)
-            {
-                int value = connsPer.getOrDefault(executor, 0);
-                if (value < leastValue) {
-                    leastValue = value;
-                    leastExec = executor;
-                }
-            }
+			Map<Thread, Integer> connsPer = groupMetrics.connectionsPerEventLoop();
 
-            // If none chosen, then just use first.
-            if (leastExec == null) {
-                leastExec = executors.get(0);
-            }
+			// Shuffle the list of executors each time so that if they all have the same number of connections, then
+			// we don't favour the 1st one.
+			Collections.shuffle(executors, ThreadLocalRandom.current());
 
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Chose eventloop: " + String.valueOf(leastExec)
-                        + ", leastValue=" + leastValue
-                        + ", connsPer=" + String.valueOf(connsPer));
-            }
+			for (EventExecutor executor : executors) {
+				int value = connsPer.getOrDefault(executor, 0);
+				if (value < leastValue) {
+					leastValue = value;
+					leastExec = executor;
+				}
+			}
 
-            return leastExec;
-        }
-    }
+			// If none chosen, then just use first.
+			if (leastExec == null) {
+				leastExec = executors.get(0);
+			}
+
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Chose eventloop: " + String.valueOf(leastExec)
+						+ ", leastValue=" + leastValue
+						+ ", connsPer=" + String.valueOf(connsPer));
+			}
+
+			return leastExec;
+		}
+	}
 }

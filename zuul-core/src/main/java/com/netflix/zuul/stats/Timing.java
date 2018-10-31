@@ -20,56 +20,54 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Generic timing helper, in nanoseconds.
- *
+ * <p>
  * User: michaels@netflix.com
  * Date: 12/13/13
  * Time: 5:05 PM
  */
-public class Timing
-{
-    private static final Logger LOG = LoggerFactory.getLogger(Timing.class);
+public class Timing {
+	private static final Logger LOG = LoggerFactory.getLogger(Timing.class);
 
-    private String name;
-    private long startTime = 0;
-    private long endTime = 0;
-    private long duration = 0;
+	private String name;
+	private long startTime = 0;
+	private long endTime = 0;
+	private long duration = 0;
 
-    public Timing(String name) {
-        this.name = name;
-    }
+	public Timing(String name) {
+		this.name = name;
+	}
 
-    public void start() {
-        this.startTime = System.nanoTime();
-    }
+	public void start() {
+		this.startTime = System.nanoTime();
+	}
 
-    public void end() {
-        this.endTime = System.nanoTime();
-        this.duration = endTime - startTime;
+	public void end() {
+		this.endTime = System.nanoTime();
+		this.duration = endTime - startTime;
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug(String.format("Timing: name=%s, duration=%s", name, duration));
-        }
-    }
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(String.format("Timing: name=%s, duration=%s", name, duration));
+		}
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public long getStartTime() {
-        return startTime;
-    }
+	public long getStartTime() {
+		return startTime;
+	}
 
-    public long getEndTime() {
-        return endTime;
-    }
+	public long getEndTime() {
+		return endTime;
+	}
 
-    public long getDuration() {
-        return duration;
-    }
+	public long getDuration() {
+		return duration;
+	}
 
-    @Override
-    public String toString()
-    {
-        return Long.toString(duration);
-    }
+	@Override
+	public String toString() {
+		return Long.toString(duration);
+	}
 }

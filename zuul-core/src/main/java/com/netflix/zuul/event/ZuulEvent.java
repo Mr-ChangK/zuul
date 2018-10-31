@@ -17,23 +17,25 @@ package com.netflix.zuul.event;
 
 /**
  * Simple event class
+ *
  * @author Mikey Cohen
  * Date: 3/22/13
  * Time: 10:09 AM
  */
 public class ZuulEvent {
-    String eventType;
-    String eventMessage;
+	String eventType;
+	String eventMessage;
 
-    public ZuulEvent( String eventType, String eventMessage) {
-        this.eventMessage = eventMessage;
-        this.eventType = eventType;
-    }
+	public ZuulEvent(String eventType, String eventMessage) {
+		this.eventMessage = eventMessage;
+		this.eventType = eventType;
+	}
 
-    public String getEventType() {
-        return this.eventType;
-    }
-    public String getEventMessage() {
-        return this.eventMessage;
-    }
+	public String getEventType() {
+		return this.eventType;
+	}
+
+	public String getEventMessage() {
+		return this.eventMessage;
+	}
 }

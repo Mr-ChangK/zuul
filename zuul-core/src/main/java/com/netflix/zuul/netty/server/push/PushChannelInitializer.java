@@ -1,12 +1,12 @@
 /**
  * Copyright 2018 Netflix, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,8 +22,6 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
-import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 
 /**
  * Author: Susheel Aroskar
@@ -32,34 +30,34 @@ import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketSe
 public abstract class PushChannelInitializer extends BaseZuulChannelInitializer {
 
 
-    public PushChannelInitializer(int port, ChannelConfig channelConfig, ChannelConfig channelDependencies,
-                                  ChannelGroup channels) {
+	public PushChannelInitializer(int port, ChannelConfig channelConfig, ChannelConfig channelDependencies,
+								  ChannelGroup channels) {
 
-        super(port, channelConfig, channelDependencies, channels);
-    }
+		super(port, channelConfig, channelDependencies, channels);
+	}
 
-    @Override
-    protected void addHttp1Handlers(ChannelPipeline pipeline) {
-        pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpServerCodec(
-                MAX_INITIAL_LINE_LENGTH.get(),
-                MAX_HEADER_SIZE.get(),
-                MAX_CHUNK_SIZE.get(),
-                false
-        ));
-        pipeline.addLast(new HttpObjectAggregator(8192));
-    }
-
-
-    @Override
-    protected void initChannel(Channel ch) throws Exception {
-        final ChannelPipeline pipeline = ch.pipeline();
-        storeChannel(ch);
-        addTcpRelatedHandlers(pipeline);
-        addHttp1Handlers(pipeline);
-        addPushHandlers(pipeline);
-    }
+	@Override
+	protected void addHttp1Handlers(ChannelPipeline pipeline) {
+		pipeline.addLast(HTTP_CODEC_HANDLER_NAME, new HttpServerCodec(
+				MAX_INITIAL_LINE_LENGTH.get(),
+				MAX_HEADER_SIZE.get(),
+				MAX_CHUNK_SIZE.get(),
+				false
+		));
+		pipeline.addLast(new HttpObjectAggregator(8192));
+	}
 
 
-    protected abstract void addPushHandlers(final ChannelPipeline pipeline);
+	@Override
+	protected void initChannel(Channel ch) throws Exception {
+		final ChannelPipeline pipeline = ch.pipeline();
+		storeChannel(ch);
+		addTcpRelatedHandlers(pipeline);
+		addHttp1Handlers(pipeline);
+		addPushHandlers(pipeline);
+	}
+
+
+	protected abstract void addPushHandlers(final ChannelPipeline pipeline);
 
 }

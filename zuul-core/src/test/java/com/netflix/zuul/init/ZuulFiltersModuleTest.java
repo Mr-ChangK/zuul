@@ -31,97 +31,97 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class ZuulFiltersModuleTest {
 
-    @Mock
-    AbstractConfiguration configuration;
+	@Mock
+	AbstractConfiguration configuration;
 
-    ZuulFiltersModule module = new ZuulFiltersModule();
+	ZuulFiltersModule module = new ZuulFiltersModule();
 
-    @Test
-    public void testDefaultFilterLocations() {
-        when(configuration.getStringArray(eq("zuul.filters.locations"))).thenReturn("inbound,outbound,endpoint".split(","));
+	@Test
+	public void testDefaultFilterLocations() {
+		when(configuration.getStringArray(eq("zuul.filters.locations"))).thenReturn("inbound,outbound,endpoint".split(","));
 
-        String[] filterLocations = module.findFilterLocations(configuration);
+		String[] filterLocations = module.findFilterLocations(configuration);
 
-        assertThat(filterLocations.length, equalTo(3));
-        assertThat(filterLocations[1], equalTo("outbound"));
-    }
+		assertThat(filterLocations.length, equalTo(3));
+		assertThat(filterLocations[1], equalTo("outbound"));
+	}
 
-    @Test
-    public void testEmptyFilterLocations() {
-        when(configuration.getStringArray(eq("zuul.filters.locations"))).thenReturn(new String[0]);
+	@Test
+	public void testEmptyFilterLocations() {
+		when(configuration.getStringArray(eq("zuul.filters.locations"))).thenReturn(new String[0]);
 
-        String[] filterLocations = module.findFilterLocations(configuration);
+		String[] filterLocations = module.findFilterLocations(configuration);
 
-        assertThat(filterLocations.length, equalTo(0));
-    }
+		assertThat(filterLocations.length, equalTo(0));
+	}
 
-    @Test
-    public void testEmptyClassNames() {
-        when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{});
-        when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{});
+	@Test
+	public void testEmptyClassNames() {
+		when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{});
+		when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{});
 
-        String[] classNames = module.findClassNames(configuration);
+		String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length, equalTo(0));
-    }
+		assertThat(classNames.length, equalTo(0));
+	}
 
-    @Test
-    public void testClassNamesOnly() {
+	@Test
+	public void testClassNamesOnly() {
 
-        Class expectedClass = TestZuulFilter.class;
+		Class expectedClass = TestZuulFilter.class;
 
-        when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{"com.netflix.zuul.init.TestZuulFilter"});
-        when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{});
+		when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{"com.netflix.zuul.init.TestZuulFilter"});
+		when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{});
 
-        String[] classNames = module.findClassNames(configuration);
+		String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length, equalTo(1));
-        assertThat(classNames[0], equalTo(expectedClass.getCanonicalName()));
+		assertThat(classNames.length, equalTo(1));
+		assertThat(classNames[0], equalTo(expectedClass.getCanonicalName()));
 
-    }
+	}
 
-    @Test
-    public void testClassNamesPackagesOnly() {
+	@Test
+	public void testClassNamesPackagesOnly() {
 
-        Class expectedClass = TestZuulFilter.class;
+		Class expectedClass = TestZuulFilter.class;
 
-        when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{});
-        when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{"com.netflix.zuul.init"});
+		when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{});
+		when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{"com.netflix.zuul.init"});
 
-        String[] classNames = module.findClassNames(configuration);
+		String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length, equalTo(1));
-        assertThat(classNames[0], equalTo(expectedClass.getCanonicalName()));
+		assertThat(classNames.length, equalTo(1));
+		assertThat(classNames[0], equalTo(expectedClass.getCanonicalName()));
 
-    }
+	}
 
-    @Test
-    public void testMultiClasses() {
-        Class expectedClass1 = TestZuulFilter.class;
-        Class expectedClass2 = TestZuulFilter2.class;
+	@Test
+	public void testMultiClasses() {
+		Class expectedClass1 = TestZuulFilter.class;
+		Class expectedClass2 = TestZuulFilter2.class;
 
-        when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{"com.netflix.zuul.init.TestZuulFilter", "com.netflix.zuul.init2.TestZuulFilter2"});
-        when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[0]);
+		when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[]{"com.netflix.zuul.init.TestZuulFilter", "com.netflix.zuul.init2.TestZuulFilter2"});
+		when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[0]);
 
-        String[] classNames = module.findClassNames(configuration);
+		String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length, equalTo(2));
-        assertThat(classNames[0], equalTo(expectedClass1.getCanonicalName()));
-        assertThat(classNames[1], equalTo(expectedClass2.getCanonicalName()));
-    }
+		assertThat(classNames.length, equalTo(2));
+		assertThat(classNames[0], equalTo(expectedClass1.getCanonicalName()));
+		assertThat(classNames[1], equalTo(expectedClass2.getCanonicalName()));
+	}
 
-    @Test
-    public void testMultiPackages() {
-        Class expectedClass1 = TestZuulFilter.class;
-        Class expectedClass2 = TestZuulFilter2.class;
+	@Test
+	public void testMultiPackages() {
+		Class expectedClass1 = TestZuulFilter.class;
+		Class expectedClass2 = TestZuulFilter2.class;
 
-        when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[0]);
-        when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{"com.netflix.zuul.init", "com.netflix.zuul.init2"});
+		when(configuration.getStringArray(eq("zuul.filters.classes"))).thenReturn(new String[0]);
+		when(configuration.getStringArray(eq("zuul.filters.packages"))).thenReturn(new String[]{"com.netflix.zuul.init", "com.netflix.zuul.init2"});
 
-        String[] classNames = module.findClassNames(configuration);
+		String[] classNames = module.findClassNames(configuration);
 
-        assertThat(classNames.length, equalTo(2));
-        assertThat(classNames[0], equalTo(expectedClass1.getCanonicalName()));
-        assertThat(classNames[1], equalTo(expectedClass2.getCanonicalName()));
-    }
+		assertThat(classNames.length, equalTo(2));
+		assertThat(classNames[0], equalTo(expectedClass1.getCanonicalName()));
+		assertThat(classNames[1], equalTo(expectedClass2.getCanonicalName()));
+	}
 }

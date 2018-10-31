@@ -16,7 +16,6 @@
 
 package com.netflix.zuul.filters;
 
-import com.netflix.zuul.exception.ZuulFilterConcurrencyExceededException;
 import com.netflix.zuul.message.ZuulMessage;
 import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
@@ -33,67 +32,67 @@ import static com.netflix.zuul.filters.FilterType.ENDPOINT;
  * instances of CachedDynamicBooleanProperty per instance of ZuulFilter will quickly kill your server's performance in
  * two ways -
  * a) Instances of CachedDynamicBooleanProperty are *very* heavy CPU wise to create due to extensive hookups machinery
- *    in their constructor
+ * in their constructor
  * b) They leak memory as they add themselves to some ConcurrentHashMap and are never garbage collected.
- *
+ * <p>
  * TL;DR use this as a base class for your ZuulFilter if you intend to create new instances of ZuulFilter
  * Created by saroskar on 6/8/17.
  */
 public abstract class SyncZuulFilterAdapter<I extends ZuulMessage, O extends ZuulMessage> implements SyncZuulFilter<I, O> {
 
-    @Override
-    public boolean isDisabled() {
-        return false;
-    }
+	@Override
+	public boolean isDisabled() {
+		return false;
+	}
 
-    @Override
-    public boolean shouldFilter(I msg) {
-        return true;
-    }
+	@Override
+	public boolean shouldFilter(I msg) {
+		return true;
+	}
 
-    @Override
-    public int filterOrder() {
-        // Set all Endpoint filters to order of 0, because they are not processed sequentially like other filter types.
-        return 0;
-    }
+	@Override
+	public int filterOrder() {
+		// Set all Endpoint filters to order of 0, because they are not processed sequentially like other filter types.
+		return 0;
+	}
 
-    @Override
-    public FilterType filterType() {
-        return ENDPOINT;
-    }
+	@Override
+	public FilterType filterType() {
+		return ENDPOINT;
+	}
 
-    @Override
-    public boolean overrideStopFilterProcessing() {
-        return false;
-    }
+	@Override
+	public boolean overrideStopFilterProcessing() {
+		return false;
+	}
 
-    @Override
-    public Observable<O> applyAsync(I input) {
-        return Observable.just(apply(input));
-    }
+	@Override
+	public Observable<O> applyAsync(I input) {
+		return Observable.just(apply(input));
+	}
 
-    @Override
-    public FilterSyncType getSyncType() {
-        return SYNC;
-    }
+	@Override
+	public FilterSyncType getSyncType() {
+		return SYNC;
+	}
 
-    @Override
-    public boolean needsBodyBuffered(I input) {
-        return false;
-    }
+	@Override
+	public boolean needsBodyBuffered(I input) {
+		return false;
+	}
 
-    @Override
-    public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
-        return chunk;
-    }
+	@Override
+	public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
+		return chunk;
+	}
 
-    @Override
-    public void incrementConcurrency() {
-        //NOOP for sync filters
-    }
+	@Override
+	public void incrementConcurrency() {
+		//NOOP for sync filters
+	}
 
-    @Override
-    public void decrementConcurrency() {
-        //NOOP for sync filters
-    }
+	@Override
+	public void decrementConcurrency() {
+		//NOOP for sync filters
+	}
 }

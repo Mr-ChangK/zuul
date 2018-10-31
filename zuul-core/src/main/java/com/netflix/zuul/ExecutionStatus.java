@@ -17,11 +17,11 @@ package com.netflix.zuul;
 
 public enum ExecutionStatus {
 
-    SUCCESS (1), SKIPPED(-1), DISABLED(-2), FAILED(-3), BODY_AWAIT(-4), ASYNC_AWAIT(-5);
-    
-    private int status;
+	SUCCESS(1), SKIPPED(-1), DISABLED(-2), FAILED(-3), BODY_AWAIT(-4), ASYNC_AWAIT(-5);
 
-    ExecutionStatus(int status) {
-        this.status = status;
-    }
+	private int status;
+
+	ExecutionStatus(int status) {
+		this.status = status;
+	}
 }

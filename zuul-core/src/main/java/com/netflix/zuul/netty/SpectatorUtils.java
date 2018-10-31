@@ -16,50 +16,46 @@
 
 package com.netflix.zuul.netty;
 
-import com.netflix.spectator.api.CompositeRegistry;
-import com.netflix.spectator.api.Counter;
-import com.netflix.spectator.api.Id;
-import com.netflix.spectator.api.Spectator;
-import com.netflix.spectator.api.Timer;
+import com.netflix.spectator.api.*;
 
 public final class SpectatorUtils {
-    private SpectatorUtils() {
-    }
+	private SpectatorUtils() {
+	}
 
-    public static Counter newCounter(String name, String id) {
-        return Spectator.globalRegistry().counter(name, "id", id);
-    }
+	public static Counter newCounter(String name, String id) {
+		return Spectator.globalRegistry().counter(name, "id", id);
+	}
 
-    public static Counter newCounter(String name, String id, String... tags) {
-        String[] allTags = getTagsWithId(id, tags);
-        return Spectator.globalRegistry().counter(name, allTags);
-    }
+	public static Counter newCounter(String name, String id, String... tags) {
+		String[] allTags = getTagsWithId(id, tags);
+		return Spectator.globalRegistry().counter(name, allTags);
+	}
 
-    public static Timer newTimer(String name, String id) {
-        return Spectator.registry().timer(name, "id", id);
-    }
+	public static Timer newTimer(String name, String id) {
+		return Spectator.registry().timer(name, "id", id);
+	}
 
-    public static Timer newTimer(String name, String id, String... tags) {
-        return Spectator.globalRegistry().timer(name, getTagsWithId(id, tags));
-    }
+	public static Timer newTimer(String name, String id, String... tags) {
+		return Spectator.globalRegistry().timer(name, getTagsWithId(id, tags));
+	}
 
-    public static <T extends Number> T newGauge(String name, String id, T number) {
-        final CompositeRegistry registry = Spectator.globalRegistry();
-        Id gaugeId = registry.createId(name, "id", id);
-        return registry.gauge(gaugeId, number);
-    }
+	public static <T extends Number> T newGauge(String name, String id, T number) {
+		final CompositeRegistry registry = Spectator.globalRegistry();
+		Id gaugeId = registry.createId(name, "id", id);
+		return registry.gauge(gaugeId, number);
+	}
 
-    public static <T extends Number> T newGauge(String name, String id, T number, String... tags) {
-        final CompositeRegistry registry = Spectator.globalRegistry();
-        Id gaugeId = registry.createId(name, getTagsWithId(id, tags));
-        return registry.gauge(gaugeId, number);
-    }
+	public static <T extends Number> T newGauge(String name, String id, T number, String... tags) {
+		final CompositeRegistry registry = Spectator.globalRegistry();
+		Id gaugeId = registry.createId(name, getTagsWithId(id, tags));
+		return registry.gauge(gaugeId, number);
+	}
 
-    private static String[] getTagsWithId(String id, String[] tags) {
-        String[] allTags = new String[tags.length + 2];
-        System.arraycopy(tags, 0, allTags, 0, tags.length);
-        allTags[allTags.length - 2] = "id";
-        allTags[allTags.length - 1] = id;
-        return allTags;
-    }
+	private static String[] getTagsWithId(String id, String[] tags) {
+		String[] allTags = new String[tags.length + 2];
+		System.arraycopy(tags, 0, allTags, 0, tags.length);
+		allTags[allTags.length - 2] = "id";
+		allTags[allTags.length - 1] = id;
+		return allTags;
+	}
 }

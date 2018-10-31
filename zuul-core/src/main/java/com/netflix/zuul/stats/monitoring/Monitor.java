@@ -17,14 +17,16 @@ package com.netflix.zuul.stats.monitoring;
 
 /**
  * Interface to register a counter to monitor
+ *
  * @author Mikey Cohen
  * Date: 3/18/13
  * Time: 4:33 PM
  */
 public interface Monitor {
-    /**
-     * Implement this to add this Counter to a Registry
-     * @param monitorObj
-     */
-    void register(NamedCount monitorObj);
+	/**
+	 * Implement this to add this Counter to a Registry
+	 *
+	 * @param monitorObj
+	 */
+	void register(NamedCount monitorObj);
 }

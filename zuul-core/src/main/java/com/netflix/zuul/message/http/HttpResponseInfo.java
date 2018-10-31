@@ -23,19 +23,21 @@ import com.netflix.zuul.message.ZuulMessage;
  * Date: 7/6/15
  * Time: 5:27 PM
  */
-public interface HttpResponseInfo extends ZuulMessage
-{
-    int getStatus();
+public interface HttpResponseInfo extends ZuulMessage {
+	int getStatus();
 
-    /** The immutable request that was originally received from client. */
-    HttpRequestInfo getInboundRequest();
+	/**
+	 * The immutable request that was originally received from client.
+	 */
+	HttpRequestInfo getInboundRequest();
 
-    @Override
-    ZuulMessage clone();
+	@Override
+	ZuulMessage clone();
 
-    @Override
-    String getInfoForLogging();
+	@Override
+	String getInfoForLogging();
 
-    Cookies parseSetCookieHeader(String setCookieValue);
-    boolean hasSetCookieWithName(String cookieName);
+	Cookies parseSetCookieHeader(String setCookieValue);
+
+	boolean hasSetCookieWithName(String cookieName);
 }

@@ -30,64 +30,57 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Closes any incoming new connections if current count is above a configured threshold.
- *
+ * <p>
  * When a connection is throttled, the channel is closed, and then a CONNECTION_THROTTLED_EVENT event is fired
  * not notify any other interested handlers.
- *
  */
 @ChannelHandler.Sharable
-public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter
-{
-    public static final String CONNECTION_THROTTLED_EVENT = "connection_throttled";
+public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter {
+	public static final String CONNECTION_THROTTLED_EVENT = "connection_throttled";
 
-    private static final Logger LOG = LoggerFactory.getLogger(MaxInboundConnectionsHandler.class);
-    private static final AttributeKey<Boolean> ATTR_CH_THROTTLED = AttributeKey.newInstance("_channel_throttled");
+	private static final Logger LOG = LoggerFactory.getLogger(MaxInboundConnectionsHandler.class);
+	private static final AttributeKey<Boolean> ATTR_CH_THROTTLED = AttributeKey.newInstance("_channel_throttled");
 
-    private final static AtomicInteger connections = new AtomicInteger(0);
-    private final int maxConnections;
+	private final static AtomicInteger connections = new AtomicInteger(0);
+	private final int maxConnections;
 
-    public MaxInboundConnectionsHandler(int maxConnections)
-    {
-        this.maxConnections = maxConnections;
-    }
+	public MaxInboundConnectionsHandler(int maxConnections) {
+		this.maxConnections = maxConnections;
+	}
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception
-    {
-        if (maxConnections > 0) {
-            int currentCount = connections.getAndIncrement();
+	@Override
+	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+		if (maxConnections > 0) {
+			int currentCount = connections.getAndIncrement();
 
-            if (currentCount + 1 > maxConnections) {
-                LOG.warn("Throttling incoming connection as above configured max connections threshold of " + maxConnections);
-                Channel channel = ctx.channel();
-                channel.attr(ATTR_CH_THROTTLED).set(Boolean.TRUE);
-                CurrentPassport.fromChannel(channel).add(PassportState.SERVER_CH_THROTTLING);
-                channel.close();
-                ctx.pipeline().fireUserEventTriggered(CONNECTION_THROTTLED_EVENT);
-            }
-        }
+			if (currentCount + 1 > maxConnections) {
+				LOG.warn("Throttling incoming connection as above configured max connections threshold of " + maxConnections);
+				Channel channel = ctx.channel();
+				channel.attr(ATTR_CH_THROTTLED).set(Boolean.TRUE);
+				CurrentPassport.fromChannel(channel).add(PassportState.SERVER_CH_THROTTLING);
+				channel.close();
+				ctx.pipeline().fireUserEventTriggered(CONNECTION_THROTTLED_EVENT);
+			}
+		}
 
-        super.channelActive(ctx);
-    }
+		super.channelActive(ctx);
+	}
 
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-    {
-        if (ctx.channel().attr(ATTR_CH_THROTTLED).get() != null) {
-            // Discard this msg as channel is in process of being closed.
-        }
-        else {
-            super.channelRead(ctx, msg);
-        }
-    }
+	@Override
+	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+		if (ctx.channel().attr(ATTR_CH_THROTTLED).get() != null) {
+			// Discard this msg as channel is in process of being closed.
+		} else {
+			super.channelRead(ctx, msg);
+		}
+	}
 
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception
-    {
-        if (maxConnections > 0) {
-            connections.decrementAndGet();
-        }
+	@Override
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		if (maxConnections > 0) {
+			connections.decrementAndGet();
+		}
 
-        super.channelInactive(ctx);
-    }
+		super.channelInactive(ctx);
+	}
 }

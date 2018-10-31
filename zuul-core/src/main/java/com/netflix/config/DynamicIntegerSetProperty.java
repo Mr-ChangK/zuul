@@ -18,26 +18,25 @@ package com.netflix.config;
 
 import java.util.Set;
 
-public class DynamicIntegerSetProperty extends DynamicSetProperty<Integer>
-{
-    public DynamicIntegerSetProperty(String propName, String defaultValue) {
-        super(propName, defaultValue);
-    }
+public class DynamicIntegerSetProperty extends DynamicSetProperty<Integer> {
+	public DynamicIntegerSetProperty(String propName, String defaultValue) {
+		super(propName, defaultValue);
+	}
 
-    public DynamicIntegerSetProperty(String propName, String defaultValue, String delimiterRegex) {
-        super(propName, defaultValue, delimiterRegex);
-    }
+	public DynamicIntegerSetProperty(String propName, String defaultValue, String delimiterRegex) {
+		super(propName, defaultValue, delimiterRegex);
+	}
 
-    public DynamicIntegerSetProperty(String propName, Set<Integer> defaultValue) {
-        super(propName, defaultValue);
-    }
+	public DynamicIntegerSetProperty(String propName, Set<Integer> defaultValue) {
+		super(propName, defaultValue);
+	}
 
-    public DynamicIntegerSetProperty(String propName, Set<Integer> defaultValue, String delimiterRegex) {
-        super(propName, defaultValue, delimiterRegex);
-    }
+	public DynamicIntegerSetProperty(String propName, Set<Integer> defaultValue, String delimiterRegex) {
+		super(propName, defaultValue, delimiterRegex);
+	}
 
-    @Override
-    protected Integer from(String value) {
-        return Integer.valueOf(value);
-    }
+	@Override
+	protected Integer from(String value) {
+		return Integer.valueOf(value);
+	}
 }

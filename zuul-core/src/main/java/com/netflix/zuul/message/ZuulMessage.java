@@ -18,58 +18,50 @@ package com.netflix.zuul.message;
 
 import com.netflix.zuul.context.SessionContext;
 import com.netflix.zuul.filters.ZuulFilter;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.CompositeByteBuf;
-import io.netty.channel.Channel;
 import io.netty.handler.codec.http.HttpContent;
-import rx.Observable;
-
-import java.nio.charset.Charset;
-import java.util.List;
 
 /**
  * User: Mike Smith
  * Date: 7/16/15
  * Time: 12:22 AM
  */
-public interface ZuulMessage extends Cloneable
-{
-    SessionContext getContext();
+public interface ZuulMessage extends Cloneable {
+	SessionContext getContext();
 
-    Headers getHeaders();
+	Headers getHeaders();
 
-    void setHeaders(Headers newHeaders);
+	void setHeaders(Headers newHeaders);
 
-    boolean hasBody();
+	boolean hasBody();
 
-    void setHasBody(boolean hasBody);
+	void setHasBody(boolean hasBody);
 
-    byte[] getBody();
+	byte[] getBody();
 
-    int getBodyLength();
+	int getBodyLength();
 
-    void setBody(byte[] body);
+	void setBody(byte[] body);
 
-    void setBodyAsText(String bodyText);
+	void setBodyAsText(String bodyText);
 
-    void bufferBodyContents(HttpContent chunk);
+	void bufferBodyContents(HttpContent chunk);
 
-    Iterable<HttpContent> getBodyContents();
+	Iterable<HttpContent> getBodyContents();
 
-    boolean finishBufferedBodyIfIncomplete();
+	boolean finishBufferedBodyIfIncomplete();
 
-    boolean hasCompleteBody();
+	boolean hasCompleteBody();
 
-    void runBufferedBodyContentThroughFilter(ZuulFilter filter);
+	void runBufferedBodyContentThroughFilter(ZuulFilter filter);
 
-    void disposeBufferedBody();
+	void disposeBufferedBody();
 
-    String getBodyAsText();
+	String getBodyAsText();
 
-    int getMaxBodySize();
+	int getMaxBodySize();
 
-    ZuulMessage clone();
+	ZuulMessage clone();
 
-    String getInfoForLogging();
+	String getInfoForLogging();
 
 }

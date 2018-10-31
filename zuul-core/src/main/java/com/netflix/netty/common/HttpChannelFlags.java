@@ -26,47 +26,39 @@ import io.netty.util.AttributeKey;
  * Date: 7/10/17
  * Time: 4:29 PM
  */
-public class HttpChannelFlags
-{
-    public static final Flag IN_BROWNOUT = new Flag("_brownout");
+public class HttpChannelFlags {
+	public static final Flag IN_BROWNOUT = new Flag("_brownout");
 
-    public static final Flag CLOSING = new Flag("_connection_closing");
-    public static final Flag CLOSE_AFTER_RESPONSE = new Flag("_connection_close_after_response");
+	public static final Flag CLOSING = new Flag("_connection_closing");
+	public static final Flag CLOSE_AFTER_RESPONSE = new Flag("_connection_close_after_response");
 
-    public static class Flag
-    {
-        private final AttributeKey<Boolean> attributeKey;
+	public static class Flag {
+		private final AttributeKey<Boolean> attributeKey;
 
-        public Flag(String name)
-        {
-            attributeKey = AttributeKey.newInstance(name);
-        }
+		public Flag(String name) {
+			attributeKey = AttributeKey.newInstance(name);
+		}
 
-        public void set(Channel ch)
-        {
-            ch.attr(attributeKey).set(Boolean.TRUE);
-        }
+		public void set(Channel ch) {
+			ch.attr(attributeKey).set(Boolean.TRUE);
+		}
 
-        public void remove(Channel ch)
-        {
-            ch.attr(attributeKey).set(null);
-        }
+		public void remove(Channel ch) {
+			ch.attr(attributeKey).set(null);
+		}
 
-        public void set(ChannelHandlerContext ctx)
-        {
-            set(ctx.channel());
-        }
+		public void set(ChannelHandlerContext ctx) {
+			set(ctx.channel());
+		}
 
-        public boolean get(Channel ch)
-        {
-            Attribute<Boolean> attr = ch.attr(attributeKey);
-            Boolean value = attr.get();
-            return (value == null) ? false : value.booleanValue();
-        }
+		public boolean get(Channel ch) {
+			Attribute<Boolean> attr = ch.attr(attributeKey);
+			Boolean value = attr.get();
+			return (value == null) ? false : value.booleanValue();
+		}
 
-        public boolean get(ChannelHandlerContext ctx)
-        {
-            return get(ctx.channel());
-        }
-    }
+		public boolean get(ChannelHandlerContext ctx) {
+			return get(ctx.channel());
+		}
+	}
 }

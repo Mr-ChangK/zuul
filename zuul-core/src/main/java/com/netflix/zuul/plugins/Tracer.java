@@ -30,42 +30,42 @@ import java.util.concurrent.TimeUnit;
  * Plugin to hook up Servo Tracers
  *
  * @author Mikey Cohen
- *         Date: 4/10/13
- *         Time: 4:51 PM
+ * Date: 4/10/13
+ * Time: 4:51 PM
  */
 public class Tracer extends TracerFactory {
 
-    static List<Tag> tags = new ArrayList<Tag>(2);
+	static List<Tag> tags = new ArrayList<Tag>(2);
 
-    static {
-        tags.add(InjectableTag.HOSTNAME);
-        tags.add(InjectableTag.IP);
-    }
+	static {
+		tags.add(InjectableTag.HOSTNAME);
+		tags.add(InjectableTag.IP);
+	}
 
-    @Override
+	@Override
 
-    public com.netflix.zuul.monitoring.Tracer startMicroTracer(String name) {
-        return new ServoTracer(name);
-    }
+	public com.netflix.zuul.monitoring.Tracer startMicroTracer(String name) {
+		return new ServoTracer(name);
+	}
 
-    class ServoTracer implements com.netflix.zuul.monitoring.Tracer {
+	class ServoTracer implements com.netflix.zuul.monitoring.Tracer {
 
-        final MonitorConfig config;
-        final Stopwatch stopwatch;
+		final MonitorConfig config;
+		final Stopwatch stopwatch;
 
-        private ServoTracer(String name) {
-            config = MonitorConfig.builder(name).withTags(tags).build();
-            stopwatch = DynamicTimer.start(config, TimeUnit.MICROSECONDS);
-        }
+		private ServoTracer(String name) {
+			config = MonitorConfig.builder(name).withTags(tags).build();
+			stopwatch = DynamicTimer.start(config, TimeUnit.MICROSECONDS);
+		}
 
-        @Override
-        public void stopAndLog() {
-            DynamicTimer.record(config, stopwatch.getDuration());
-        }
+		@Override
+		public void stopAndLog() {
+			DynamicTimer.record(config, stopwatch.getDuration());
+		}
 
-        @Override
-        public void setName(String name) {
+		@Override
+		public void setName(String name) {
 
-        }
-    }
+		}
+	}
 }

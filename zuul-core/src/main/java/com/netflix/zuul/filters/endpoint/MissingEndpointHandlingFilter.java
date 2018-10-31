@@ -29,32 +29,32 @@ import org.slf4j.LoggerFactory;
  * Created by saroskar on 2/13/17.
  */
 public final class MissingEndpointHandlingFilter extends SyncZuulFilterAdapter<HttpRequestMessage, HttpResponseMessage> {
-    private final String name;
+	private final String name;
 
-    private static final Logger LOG = LoggerFactory.getLogger(MissingEndpointHandlingFilter.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MissingEndpointHandlingFilter.class);
 
-    public MissingEndpointHandlingFilter(String name) {
-        this.name = name;
-    }
+	public MissingEndpointHandlingFilter(String name) {
+		this.name = name;
+	}
 
-    @Override
-    public HttpResponseMessage apply(HttpRequestMessage request) {
-        final SessionContext zuulCtx = request.getContext();
-        zuulCtx.setErrorResponseSent(true);
-        final String errMesg = "Missing Endpoint filter, name = " + name;
-        zuulCtx.setError(new ZuulException(errMesg, true));
-        LOG.error(errMesg);
-        return new HttpResponseMessageImpl(zuulCtx, request, 500);
-    }
+	@Override
+	public HttpResponseMessage apply(HttpRequestMessage request) {
+		final SessionContext zuulCtx = request.getContext();
+		zuulCtx.setErrorResponseSent(true);
+		final String errMesg = "Missing Endpoint filter, name = " + name;
+		zuulCtx.setError(new ZuulException(errMesg, true));
+		LOG.error(errMesg);
+		return new HttpResponseMessageImpl(zuulCtx, request, 500);
+	}
 
-    @Override
-    public String filterName() {
-        return name;
-    }
+	@Override
+	public String filterName() {
+		return name;
+	}
 
-    @Override
-    public HttpResponseMessage getDefaultOutput(final HttpRequestMessage input) {
-        return HttpResponseMessageImpl.defaultErrorResponse(input);
-    }
+	@Override
+	public HttpResponseMessage getDefaultOutput(final HttpRequestMessage input) {
+		return HttpResponseMessageImpl.defaultErrorResponse(input);
+	}
 
 }

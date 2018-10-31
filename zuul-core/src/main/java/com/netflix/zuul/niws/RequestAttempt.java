@@ -34,343 +34,307 @@ import io.netty.handler.timeout.ReadTimeoutException;
  * Date: 9/2/14
  * Time: 2:52 PM
  */
-public class RequestAttempt
-{
-    private static final ObjectMapper JACKSON_MAPPER = new ObjectMapper();
+public class RequestAttempt {
+	private static final ObjectMapper JACKSON_MAPPER = new ObjectMapper();
 
-    private int attempt;
-    private int status;
-    private long duration;
-    private String error;
-    private String exceptionType;
-    private String app;
-    private String asg;
-    private String instanceId;
-    private String host;
-    private int port;
-    private String vip;
-    private String region;
-    private String availabilityZone;
-    private int readTimeout;
-    private int connectTimeout;
-    private int maxRetries;
+	private int attempt;
+	private int status;
+	private long duration;
+	private String error;
+	private String exceptionType;
+	private String app;
+	private String asg;
+	private String instanceId;
+	private String host;
+	private int port;
+	private String vip;
+	private String region;
+	private String availabilityZone;
+	private int readTimeout;
+	private int connectTimeout;
+	private int maxRetries;
 
-    public RequestAttempt(int attemptNumber, InstanceInfo server, String targetVip, String chosenWarmupLB, int status, String error, String exceptionType,
-                          int readTimeout, int connectTimeout, int maxRetries)
-    {
-        if (attemptNumber < 1) {
-            throw new IllegalArgumentException("Attempt number must be greater than 0! - " + attemptNumber);
-        }
-        this.attempt = attemptNumber;
-        this.vip = targetVip;
+	public RequestAttempt(int attemptNumber, InstanceInfo server, String targetVip, String chosenWarmupLB, int status, String error, String exceptionType,
+						  int readTimeout, int connectTimeout, int maxRetries) {
+		if (attemptNumber < 1) {
+			throw new IllegalArgumentException("Attempt number must be greater than 0! - " + attemptNumber);
+		}
+		this.attempt = attemptNumber;
+		this.vip = targetVip;
 
-        if (server != null) {
-            this.app = server.getAppName().toLowerCase();
-            this.asg = server.getASGName();
-            this.instanceId = server.getInstanceId();
-            this.host = server.getHostName();
-            this.port = server.getPort();
+		if (server != null) {
+			this.app = server.getAppName().toLowerCase();
+			this.asg = server.getASGName();
+			this.instanceId = server.getInstanceId();
+			this.host = server.getHostName();
+			this.port = server.getPort();
 
-            // If targetVip is null, then try to use the actual server's vip.
-            if (targetVip == null) {
-                this.vip = server.getVIPAddress();
-            }
+			// If targetVip is null, then try to use the actual server's vip.
+			if (targetVip == null) {
+				this.vip = server.getVIPAddress();
+			}
 
-            if (server.getDataCenterInfo() instanceof AmazonInfo) {
-                this.availabilityZone = ((AmazonInfo) server.getDataCenterInfo()).getMetadata().get("availability-zone");
+			if (server.getDataCenterInfo() instanceof AmazonInfo) {
+				this.availabilityZone = ((AmazonInfo) server.getDataCenterInfo()).getMetadata().get("availability-zone");
 
-                // HACK - get region by just removing the last char from zone.
-                String az = getAvailabilityZone();
-                if (az != null && az.length() > 0) {
-                    this.region = az.substring(0, az.length() - 1);
-                }
-            }
-        }
-        
-        this.status = status;
-        this.error = error;
-        this.exceptionType = exceptionType;
-        this.readTimeout = readTimeout;
-        this.connectTimeout = connectTimeout;
-        this.maxRetries = maxRetries;
-    }
+				// HACK - get region by just removing the last char from zone.
+				String az = getAvailabilityZone();
+				if (az != null && az.length() > 0) {
+					this.region = az.substring(0, az.length() - 1);
+				}
+			}
+		}
 
-    public RequestAttempt(final Server server, final IClientConfig clientConfig, int attemptNumber, int readTimeout) {
-        this.status = -1;
-        this.attempt = attemptNumber;
-        this.readTimeout = readTimeout;
+		this.status = status;
+		this.error = error;
+		this.exceptionType = exceptionType;
+		this.readTimeout = readTimeout;
+		this.connectTimeout = connectTimeout;
+		this.maxRetries = maxRetries;
+	}
 
-        if (server != null) {
-            this.host = server.getHost();
-            this.port = server.getPort();
-            this.availabilityZone = server.getZone();
+	public RequestAttempt(final Server server, final IClientConfig clientConfig, int attemptNumber, int readTimeout) {
+		this.status = -1;
+		this.attempt = attemptNumber;
+		this.readTimeout = readTimeout;
 
-            if (server instanceof DiscoveryEnabledServer) {
-                InstanceInfo instanceInfo = ((DiscoveryEnabledServer) server).getInstanceInfo();
-                this.app = instanceInfo.getAppName().toLowerCase();
-                this.asg = instanceInfo.getASGName();
-                this.instanceId = instanceInfo.getInstanceId();
-                this.host = instanceInfo.getHostName();
-                this.port = instanceInfo.getPort();
+		if (server != null) {
+			this.host = server.getHost();
+			this.port = server.getPort();
+			this.availabilityZone = server.getZone();
 
-                if (server.getPort() == instanceInfo.getSecurePort()) {
-                    this.vip = instanceInfo.getSecureVipAddress();
-                }
-                else {
-                    this.vip = instanceInfo.getVIPAddress();
-                }
-                if (instanceInfo.getDataCenterInfo() instanceof AmazonInfo) {
-                    this.availabilityZone = ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
-                }
-            }
-            else {
-                final Server.MetaInfo metaInfo = server.getMetaInfo();
-                if (metaInfo != null) {
-                    this.asg = metaInfo.getServerGroup();
-                    this.vip = metaInfo.getServiceIdForDiscovery();
-                    this.instanceId = metaInfo.getInstanceId();
-                }
-            }
-            // HACK - get region by just removing the last char from zone.
-            if (availabilityZone != null && availabilityZone.length() > 0) {
-                region = availabilityZone.substring(0, availabilityZone.length() - 1);
-            }
-        }
+			if (server instanceof DiscoveryEnabledServer) {
+				InstanceInfo instanceInfo = ((DiscoveryEnabledServer) server).getInstanceInfo();
+				this.app = instanceInfo.getAppName().toLowerCase();
+				this.asg = instanceInfo.getASGName();
+				this.instanceId = instanceInfo.getInstanceId();
+				this.host = instanceInfo.getHostName();
+				this.port = instanceInfo.getPort();
 
-        if (clientConfig != null) {
-            this.connectTimeout = clientConfig.get(IClientConfigKey.Keys.ConnectTimeout);
-        }
-    }
+				if (server.getPort() == instanceInfo.getSecurePort()) {
+					this.vip = instanceInfo.getSecureVipAddress();
+				} else {
+					this.vip = instanceInfo.getVIPAddress();
+				}
+				if (instanceInfo.getDataCenterInfo() instanceof AmazonInfo) {
+					this.availabilityZone = ((AmazonInfo) instanceInfo.getDataCenterInfo()).getMetadata().get("availability-zone");
+				}
+			} else {
+				final Server.MetaInfo metaInfo = server.getMetaInfo();
+				if (metaInfo != null) {
+					this.asg = metaInfo.getServerGroup();
+					this.vip = metaInfo.getServiceIdForDiscovery();
+					this.instanceId = metaInfo.getInstanceId();
+				}
+			}
+			// HACK - get region by just removing the last char from zone.
+			if (availabilityZone != null && availabilityZone.length() > 0) {
+				region = availabilityZone.substring(0, availabilityZone.length() - 1);
+			}
+		}
 
-    private RequestAttempt() {
-    }
+		if (clientConfig != null) {
+			this.connectTimeout = clientConfig.get(IClientConfigKey.Keys.ConnectTimeout);
+		}
+	}
 
-    public void complete(int responseStatus, long durationMs, Throwable exception)
-    {
-        if (responseStatus > -1)
-            setStatus(responseStatus);
+	private RequestAttempt() {
+	}
 
-        this.duration = durationMs;
+	public void complete(int responseStatus, long durationMs, Throwable exception) {
+		if (responseStatus > -1)
+			setStatus(responseStatus);
 
-        if (exception != null)
-            setException(exception);
-    }
+		this.duration = durationMs;
 
-    public int getAttempt()
-    {
-        return attempt;
-    }
+		if (exception != null)
+			setException(exception);
+	}
 
-    public String getVip()
-    {
-        return vip;
-    }
+	public int getAttempt() {
+		return attempt;
+	}
 
-    public int getStatus() {
-        return this.status;
-    }
+	public String getVip() {
+		return vip;
+	}
 
-    public long getDuration() {
-        return this.duration;
-    }
+	public int getStatus() {
+		return this.status;
+	}
 
-    public String getError() {
-        return error;
-    }
+	public long getDuration() {
+		return this.duration;
+	}
 
-    public String getApp()
-    {
-        return app;
-    }
+	public String getError() {
+		return error;
+	}
 
-    public String getAsg() {
-        return asg;
-    }
+	public String getApp() {
+		return app;
+	}
 
-    public String getInstanceId() {
-        return instanceId;
-    }
+	public String getAsg() {
+		return asg;
+	}
 
-    public String getHost() {
-        return host;
-    }
+	public String getInstanceId() {
+		return instanceId;
+	}
 
-    public int getPort() {
-        return port;
-    }
+	public String getHost() {
+		return host;
+	}
 
-    public String getRegion()
-    {
-        return region;
-    }
+	public int getPort() {
+		return port;
+	}
 
-    public String getAvailabilityZone() {
-        return availabilityZone;
-    }
+	public String getRegion() {
+		return region;
+	}
 
-    public String getExceptionType()
-    {
-        return exceptionType;
-    }
+	public String getAvailabilityZone() {
+		return availabilityZone;
+	}
 
-    public int getReadTimeout()
-    {
-        return readTimeout;
-    }
+	public String getExceptionType() {
+		return exceptionType;
+	}
 
-    public int getConnectTimeout()
-    {
-        return connectTimeout;
-    }
+	public int getReadTimeout() {
+		return readTimeout;
+	}
 
-    public int getMaxRetries()
-    {
-        return maxRetries;
-    }
+	public int getConnectTimeout() {
+		return connectTimeout;
+	}
 
-    public void setStatus(int status)
-    {
-        this.status = status;
-    }
+	public int getMaxRetries() {
+		return maxRetries;
+	}
 
-    public void setError(String error)
-    {
-        this.error = error;
-    }
+	public void setStatus(int status) {
+		this.status = status;
+	}
 
-    public void setExceptionType(String exceptionType)
-    {
-        this.exceptionType = exceptionType;
-    }
+	public void setError(String error) {
+		this.error = error;
+	}
 
-    public void setApp(String app)
-    {
-        this.app = app;
-    }
+	public void setExceptionType(String exceptionType) {
+		this.exceptionType = exceptionType;
+	}
 
-    public void setAsg(String asg)
-    {
-        this.asg = asg;
-    }
+	public void setApp(String app) {
+		this.app = app;
+	}
 
-    public void setInstanceId(String instanceId)
-    {
-        this.instanceId = instanceId;
-    }
+	public void setAsg(String asg) {
+		this.asg = asg;
+	}
 
-    public void setHost(String host)
-    {
-        this.host = host;
-    }
+	public void setInstanceId(String instanceId) {
+		this.instanceId = instanceId;
+	}
 
-    public void setPort(int port)
-    {
-        this.port = port;
-    }
+	public void setHost(String host) {
+		this.host = host;
+	}
 
-    public void setVip(String vip)
-    {
-        this.vip = vip;
-    }
+	public void setPort(int port) {
+		this.port = port;
+	}
 
-    public void setRegion(String region)
-    {
-        this.region = region;
-    }
+	public void setVip(String vip) {
+		this.vip = vip;
+	}
 
-    public void setAvailabilityZone(String availabilityZone)
-    {
-        this.availabilityZone = availabilityZone;
-    }
+	public void setRegion(String region) {
+		this.region = region;
+	}
 
-    public void setReadTimeout(int readTimeout)
-    {
-        this.readTimeout = readTimeout;
-    }
+	public void setAvailabilityZone(String availabilityZone) {
+		this.availabilityZone = availabilityZone;
+	}
 
-    public void setConnectTimeout(int connectTimeout)
-    {
-        this.connectTimeout = connectTimeout;
-    }
+	public void setReadTimeout(int readTimeout) {
+		this.readTimeout = readTimeout;
+	}
 
-    public void setException(Throwable t) {
-        if (t != null) {
-            if (t instanceof ReadTimeoutException) {
-                error = "READ_TIMEOUT";
-                exceptionType = t.getClass().getSimpleName();
-            }
-            else if (t instanceof OriginConnectException) {
-                OriginConnectException oce = (OriginConnectException) t;
-                if (oce.getErrorType() != null) {
-                    error = oce.getErrorType().toString();
-                }
-                else {
-                    error = "ORIGIN_CONNECT_ERROR";
-                }
+	public void setConnectTimeout(int connectTimeout) {
+		this.connectTimeout = connectTimeout;
+	}
 
-                final Throwable cause = t.getCause();
-                if (cause != null) {
-                    exceptionType = t.getCause().getClass().getSimpleName();
-                }
-                else {
-                    exceptionType = t.getClass().getSimpleName();
-                }
-            }
-            else if (t instanceof OutboundException) {
-                OutboundException obe = (OutboundException) t;
-                error = obe.getOutboundErrorType().toString();
-                exceptionType = OutboundException.class.getSimpleName();
-            }
-            else {
-                error = t.getMessage();
-                exceptionType = t.getClass().getSimpleName();
-            }
-        }
-    }
+	public void setException(Throwable t) {
+		if (t != null) {
+			if (t instanceof ReadTimeoutException) {
+				error = "READ_TIMEOUT";
+				exceptionType = t.getClass().getSimpleName();
+			} else if (t instanceof OriginConnectException) {
+				OriginConnectException oce = (OriginConnectException) t;
+				if (oce.getErrorType() != null) {
+					error = oce.getErrorType().toString();
+				} else {
+					error = "ORIGIN_CONNECT_ERROR";
+				}
 
-    public void setMaxRetries(int maxRetries)
-    {
-        this.maxRetries = maxRetries;
-    }
+				final Throwable cause = t.getCause();
+				if (cause != null) {
+					exceptionType = t.getCause().getClass().getSimpleName();
+				} else {
+					exceptionType = t.getClass().getSimpleName();
+				}
+			} else if (t instanceof OutboundException) {
+				OutboundException obe = (OutboundException) t;
+				error = obe.getOutboundErrorType().toString();
+				exceptionType = OutboundException.class.getSimpleName();
+			} else {
+				error = t.getMessage();
+				exceptionType = t.getClass().getSimpleName();
+			}
+		}
+	}
 
-    @Override
-    public String toString()
-    {
-        try {
-            return JACKSON_MAPPER.writeValueAsString(toJsonNode());
-        }
-        catch (JsonProcessingException e) {
-            throw new RuntimeException("Error serializing RequestAttempt!", e);
-        }
-    }
+	public void setMaxRetries(int maxRetries) {
+		this.maxRetries = maxRetries;
+	}
 
-    public ObjectNode toJsonNode()
-    {
-        ObjectNode root = JACKSON_MAPPER.createObjectNode();
-        root.put("status", status);
-        root.put("duration", duration);
-        root.put("attempt", attempt);
+	@Override
+	public String toString() {
+		try {
+			return JACKSON_MAPPER.writeValueAsString(toJsonNode());
+		} catch (JsonProcessingException e) {
+			throw new RuntimeException("Error serializing RequestAttempt!", e);
+		}
+	}
 
-        putNullableAttribute(root, "error", error);
-        putNullableAttribute(root, "exceptionType", exceptionType);
-        putNullableAttribute(root, "region", region);
-        putNullableAttribute(root, "asg", asg);
-        putNullableAttribute(root, "instanceId", instanceId);
-        putNullableAttribute(root, "vip", vip);
+	public ObjectNode toJsonNode() {
+		ObjectNode root = JACKSON_MAPPER.createObjectNode();
+		root.put("status", status);
+		root.put("duration", duration);
+		root.put("attempt", attempt);
 
-        if (status < 1) {
-            root.put("readTimeout", readTimeout);
-            root.put("connectTimeout", connectTimeout);
-        }
+		putNullableAttribute(root, "error", error);
+		putNullableAttribute(root, "exceptionType", exceptionType);
+		putNullableAttribute(root, "region", region);
+		putNullableAttribute(root, "asg", asg);
+		putNullableAttribute(root, "instanceId", instanceId);
+		putNullableAttribute(root, "vip", vip);
 
-        return root;
-    }
+		if (status < 1) {
+			root.put("readTimeout", readTimeout);
+			root.put("connectTimeout", connectTimeout);
+		}
 
-    private static ObjectNode putNullableAttribute(ObjectNode node, String name, String value)
-    {
-        if (value != null) {
-            node.put(name, value);
-        }
-        return node;
-    }
+		return root;
+	}
+
+	private static ObjectNode putNullableAttribute(ObjectNode node, String name, String value) {
+		if (value != null) {
+			node.put(name, value);
+		}
+		return node;
+	}
 }

@@ -22,25 +22,24 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
  * Date: 5/15/15
  * Time: 10:54 AM
  */
-public class TestSyncFilter extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage>
-{
-    @Override
-    public HttpRequestMessage apply(HttpRequestMessage input) {
-        return input;
-    }
+public class TestSyncFilter extends BaseSyncFilter<HttpRequestMessage, HttpRequestMessage> {
+	@Override
+	public HttpRequestMessage apply(HttpRequestMessage input) {
+		return input;
+	}
 
-    @Override
-    public int filterOrder() {
-        return 0;
-    }
+	@Override
+	public int filterOrder() {
+		return 0;
+	}
 
-    @Override
-    public FilterType filterType() {
-        return FilterType.INBOUND;
-    }
+	@Override
+	public FilterType filterType() {
+		return FilterType.INBOUND;
+	}
 
-    @Override
-    public boolean shouldFilter(HttpRequestMessage msg) {
-        return true;
-    }
+	@Override
+	public boolean shouldFilter(HttpRequestMessage msg) {
+		return true;
+	}
 }

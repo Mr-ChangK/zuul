@@ -22,10 +22,9 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 @Singleton
-public class NullChannelHandlerProvider implements Provider<ChannelHandler>
-{
-    @Override
-    public ChannelHandler get() {
-        return null;
-    }
+public class NullChannelHandlerProvider implements Provider<ChannelHandler> {
+	@Override
+	public ChannelHandler get() {
+		return null;
+	}
 }

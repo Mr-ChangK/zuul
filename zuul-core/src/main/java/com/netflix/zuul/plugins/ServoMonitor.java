@@ -21,13 +21,14 @@ import com.netflix.zuul.stats.monitoring.NamedCount;
 
 /**
  * implementation to hook up the Servo Monitors to register Named counters
+ *
  * @author Mikey Cohen
  * Date: 4/16/13
  * Time: 4:40 PM
  */
 public class ServoMonitor implements Monitor {
-    @Override
-    public void register(NamedCount monitorObj) {
-        Monitors.registerObject(monitorObj);
-    }
+	@Override
+	public void register(NamedCount monitorObj) {
+		Monitors.registerObject(monitorObj);
+	}
 }

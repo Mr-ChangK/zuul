@@ -15,20 +15,20 @@ import io.netty.channel.group.ChannelGroup;
  */
 public class SampleSSEPushChannelInitializer extends PushChannelInitializer {
 
-    private final PushConnectionRegistry pushConnectionRegistry;
-    private final PushAuthHandler pushAuthHandler;
+	private final PushConnectionRegistry pushConnectionRegistry;
+	private final PushAuthHandler pushAuthHandler;
 
-    public SampleSSEPushChannelInitializer(int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
-        super(port, channelConfig, channelDependencies, channels);
-        pushConnectionRegistry = channelDependencies.get(ZuulDependencyKeys.pushConnectionRegistry);
-        pushAuthHandler = new SamplePushAuthHandler(PushProtocol.SSE.getPath());
-    }
+	public SampleSSEPushChannelInitializer(int port, ChannelConfig channelConfig, ChannelConfig channelDependencies, ChannelGroup channels) {
+		super(port, channelConfig, channelDependencies, channels);
+		pushConnectionRegistry = channelDependencies.get(ZuulDependencyKeys.pushConnectionRegistry);
+		pushAuthHandler = new SamplePushAuthHandler(PushProtocol.SSE.getPath());
+	}
 
 
-    @Override
-    protected void addPushHandlers(final ChannelPipeline pipeline) {
-        pipeline.addLast(PushAuthHandler.NAME, pushAuthHandler);
-        pipeline.addLast(new SampleSSEPushRegistrationHandler(pushConnectionRegistry));
-    }
+	@Override
+	protected void addPushHandlers(final ChannelPipeline pipeline) {
+		pipeline.addLast(PushAuthHandler.NAME, pushAuthHandler);
+		pipeline.addLast(new SampleSSEPushRegistrationHandler(pushConnectionRegistry));
+	}
 
 }

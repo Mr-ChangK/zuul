@@ -18,44 +18,41 @@ package com.netflix.zuul.netty.connectionpool;
 
 import com.netflix.loadbalancer.Server;
 import com.netflix.zuul.context.SessionContext;
-import com.netflix.zuul.exception.ErrorType;
 
 /**
  * Request Stat
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: November 29, 2017
  */
 public interface RequestStat {
 
-    String SESSION_CONTEXT_KEY = "niwsRequestStat";
+	String SESSION_CONTEXT_KEY = "niwsRequestStat";
 
-    static RequestStat putInSessionContext(RequestStat stat, SessionContext context)
-    {
-        context.put(SESSION_CONTEXT_KEY, stat);
-        return stat;
-    }
+	static RequestStat putInSessionContext(RequestStat stat, SessionContext context) {
+		context.put(SESSION_CONTEXT_KEY, stat);
+		return stat;
+	}
 
-    static RequestStat getFromSessionContext(SessionContext context)
-    {
-        return (RequestStat) context.get(SESSION_CONTEXT_KEY);
-    }
+	static RequestStat getFromSessionContext(SessionContext context) {
+		return (RequestStat) context.get(SESSION_CONTEXT_KEY);
+	}
 
-    RequestStat server(Server server);
+	RequestStat server(Server server);
 
-    boolean isFinished();
+	boolean isFinished();
 
-    long duration();
+	long duration();
 
-    void serviceUnavailable();
+	void serviceUnavailable();
 
-    void nextServerRetriesExceeded();
+	void nextServerRetriesExceeded();
 
-    void generalError();
+	void generalError();
 
-    void failAndSetErrorCode(String error);
+	void failAndSetErrorCode(String error);
 
-    void updateWithHttpStatusCode(int httpStatusCode);
+	void updateWithHttpStatusCode(int httpStatusCode);
 
-    boolean finishIfNotAlready();
+	boolean finishIfNotAlready();
 }

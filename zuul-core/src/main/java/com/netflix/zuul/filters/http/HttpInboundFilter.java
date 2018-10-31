@@ -24,10 +24,9 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
  * Date: 5/29/15
  * Time: 3:22 PM
  */
-public abstract class HttpInboundFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessage>
-{
-    @Override
-    public FilterType filterType() {
-        return FilterType.INBOUND;
-    }
+public abstract class HttpInboundFilter extends BaseFilter<HttpRequestMessage, HttpRequestMessage> {
+	@Override
+	public FilterType filterType() {
+		return FilterType.INBOUND;
+	}
 }

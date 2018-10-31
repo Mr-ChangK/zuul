@@ -24,22 +24,22 @@ import com.netflix.zuul.exception.ErrorType;
  */
 public class OriginConnectException extends Exception {
 
-    private final ErrorType errorType;
+	private final ErrorType errorType;
 
-    public OriginConnectException(String message, ErrorType errorType) {
-        // ensure this exception does not fill its stacktrace, this causes a 10x slowdown
-        super(message, null, true, false);
-        this.errorType = errorType;
-    }
+	public OriginConnectException(String message, ErrorType errorType) {
+		// ensure this exception does not fill its stacktrace, this causes a 10x slowdown
+		super(message, null, true, false);
+		this.errorType = errorType;
+	}
 
-    public OriginConnectException(String message, Throwable cause, ErrorType errorType) {
-        // ensure this exception does not fill its stacktrace, this causes a 10x slowdown
-        super(message, cause, true, false);
-        this.errorType = errorType;
-    }
+	public OriginConnectException(String message, Throwable cause, ErrorType errorType) {
+		// ensure this exception does not fill its stacktrace, this causes a 10x slowdown
+		super(message, cause, true, false);
+		this.errorType = errorType;
+	}
 
-    public ErrorType getErrorType() {
-        return errorType;
-    }
+	public ErrorType getErrorType() {
+		return errorType;
+	}
 
 }

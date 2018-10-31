@@ -22,23 +22,23 @@ import com.netflix.zuul.message.ZuulMessage;
 
 public class TestZuulFilter2 extends BaseSyncFilter {
 
-    @Override
-    public FilterType filterType() {
-        return FilterType.INBOUND;
-    }
+	@Override
+	public FilterType filterType() {
+		return FilterType.INBOUND;
+	}
 
-    @Override
-    public int filterOrder() {
-        return 0;
-    }
+	@Override
+	public int filterOrder() {
+		return 0;
+	}
 
-    @Override
-    public boolean shouldFilter(ZuulMessage msg) {
-        return false;
-    }
+	@Override
+	public boolean shouldFilter(ZuulMessage msg) {
+		return false;
+	}
 
-    @Override
-    public ZuulMessage apply(ZuulMessage msg) {
-        return null;
-    }
+	@Override
+	public ZuulMessage apply(ZuulMessage msg) {
+		return null;
+	}
 }

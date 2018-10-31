@@ -17,27 +17,28 @@ package com.netflix.zuul;
 
 /**
  * Metadata about the Zuul instance/ application name and "stack"
+ *
  * @author Mikey Cohen
  * Date: 2/15/13
  * Time: 1:56 PM
  */
 public class ZuulApplicationInfo {
-    public static String applicationName;
-    public static String stack;
+	public static String applicationName;
+	public static String stack;
 
-    public static String getApplicationName() {
-        return applicationName;
-    }
+	public static String getApplicationName() {
+		return applicationName;
+	}
 
-    public static void setApplicationName(String applicationName) {
-        ZuulApplicationInfo.applicationName = applicationName;
-    }
+	public static void setApplicationName(String applicationName) {
+		ZuulApplicationInfo.applicationName = applicationName;
+	}
 
-    public static String getStack() {
-        return stack;
-    }
+	public static String getStack() {
+		return stack;
+	}
 
-    public static void setStack(String stack) {
-        ZuulApplicationInfo.stack = stack;
-    }
+	public static void setStack(String stack) {
+		ZuulApplicationInfo.stack = stack;
+	}
 }

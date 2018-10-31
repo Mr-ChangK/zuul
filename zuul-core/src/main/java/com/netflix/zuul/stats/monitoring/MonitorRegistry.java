@@ -18,30 +18,31 @@ package com.netflix.zuul.stats.monitoring;
 /**
  * Registry to register a Counter. a Monitor publisher should  be set to get counter information.
  * If it isn't set, registration will be ignored.
+ *
  * @author Mikey Cohen
  * Date: 3/18/13
  * Time: 4:24 PM
  */
 public class MonitorRegistry {
 
-    private static  final MonitorRegistry instance = new MonitorRegistry();
-    private Monitor publisher;
+	private static final MonitorRegistry instance = new MonitorRegistry();
+	private Monitor publisher;
 
-    /**
-     * A Monitor implementation should be set here
-     * @param publisher
-     */
-    public void setPublisher(Monitor publisher) {
-        this.publisher = publisher;
-    }
+	/**
+	 * A Monitor implementation should be set here
+	 *
+	 * @param publisher
+	 */
+	public void setPublisher(Monitor publisher) {
+		this.publisher = publisher;
+	}
 
 
+	public static MonitorRegistry getInstance() {
+		return instance;
+	}
 
-    public static MonitorRegistry getInstance() {
-        return instance;
-    }
-
-    public void registerObject(NamedCount monitorObj) {
-      if(publisher != null) publisher.register(monitorObj);
-    }
+	public void registerObject(NamedCount monitorObj) {
+		if (publisher != null) publisher.register(monitorObj);
+	}
 }

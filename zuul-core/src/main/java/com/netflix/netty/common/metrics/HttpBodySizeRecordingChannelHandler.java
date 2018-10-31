@@ -29,131 +29,112 @@ import javax.inject.Provider;
  * Date: 4/14/16
  * Time: 3:51 PM
  */
-public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHandler
-{
-    private static final AttributeKey<State> ATTR_STATE = AttributeKey.newInstance("_http_body_size_state");
+public class HttpBodySizeRecordingChannelHandler extends CombinedChannelDuplexHandler {
+	private static final AttributeKey<State> ATTR_STATE = AttributeKey.newInstance("_http_body_size_state");
 
-    public HttpBodySizeRecordingChannelHandler()
-    {
-        super(new InboundChannelHandler(), new OutboundChannelHandler());
-    }
-    
-    public static Provider<Long> getCurrentRequestBodySize(Channel ch)
-    {
-        return new RequestBodySizeProvider(ch);
-    }
+	public HttpBodySizeRecordingChannelHandler() {
+		super(new InboundChannelHandler(), new OutboundChannelHandler());
+	}
 
-    public static Provider<Long> getCurrentResponseBodySize(Channel ch)
-    {
-        return new ResponseBodySizeProvider(ch);
-    }
-    
-    private static State getOrCreateCurrentState(Channel ch)
-    {
-        State state = ch.attr(ATTR_STATE).get();
-        if (state == null) {
-            state = createNewState(ch);
-        }
-        return state;
-    }
+	public static Provider<Long> getCurrentRequestBodySize(Channel ch) {
+		return new RequestBodySizeProvider(ch);
+	}
 
-    private static State createNewState(Channel ch)
-    {
-        State state = new State();
-        ch.attr(ATTR_STATE).set(state);
-        return state;
-    }
+	public static Provider<Long> getCurrentResponseBodySize(Channel ch) {
+		return new ResponseBodySizeProvider(ch);
+	}
 
-    private static class InboundChannelHandler extends ChannelInboundHandlerAdapter
-    {
-        @Override
-        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-        {
-            State state = null;
-            
-            // Reset the state as each new request comes in.
-            if (msg instanceof HttpRequest) {
-                state = createNewState(ctx.channel());
-            }
-            
-            // Update the request body size with this chunk.
-            if (msg instanceof HttpContent) {
-                if (state == null) {
-                    state = getOrCreateCurrentState(ctx.channel());
-                }
-                state.requestBodySize += ((HttpContent) msg).content().readableBytes();
-            }
+	private static State getOrCreateCurrentState(Channel ch) {
+		State state = ch.attr(ATTR_STATE).get();
+		if (state == null) {
+			state = createNewState(ch);
+		}
+		return state;
+	}
 
-            super.channelRead(ctx, msg);
-        }
+	private static State createNewState(Channel ch) {
+		State state = new State();
+		ch.attr(ATTR_STATE).set(state);
+		return state;
+	}
 
-        @Override
-        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception
-        {
-            try {
-                super.userEventTriggered(ctx, evt);
-            }
-            finally {
-                if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
-                    ctx.channel().attr(ATTR_STATE).set(null);
-                }
-            }
-        }
-    }
+	private static class InboundChannelHandler extends ChannelInboundHandlerAdapter {
+		@Override
+		public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+			State state = null;
 
-    private static class OutboundChannelHandler extends ChannelOutboundHandlerAdapter
-    {
-        @Override
-        public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-        {
-            State state = getOrCreateCurrentState(ctx.channel());
+			// Reset the state as each new request comes in.
+			if (msg instanceof HttpRequest) {
+				state = createNewState(ctx.channel());
+			}
 
-            // Update the response body size with this chunk.
-            if (msg instanceof HttpContent) {
-                state.responseBodySize += ((HttpContent) msg).content().readableBytes();
-            }
+			// Update the request body size with this chunk.
+			if (msg instanceof HttpContent) {
+				if (state == null) {
+					state = getOrCreateCurrentState(ctx.channel());
+				}
+				state.requestBodySize += ((HttpContent) msg).content().readableBytes();
+			}
 
-            super.write(ctx, msg, promise);
-        }
-    }
+			super.channelRead(ctx, msg);
+		}
 
-    private static class State
-    {
-        long requestBodySize = 0;
-        long responseBodySize = 0;
-    }
-    
-    static class RequestBodySizeProvider implements Provider<Long>
-    {
-        private final Channel channel;
+		@Override
+		public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+			try {
+				super.userEventTriggered(ctx, evt);
+			} finally {
+				if (evt instanceof HttpLifecycleChannelHandler.CompleteEvent) {
+					ctx.channel().attr(ATTR_STATE).set(null);
+				}
+			}
+		}
+	}
 
-        public RequestBodySizeProvider(Channel channel)
-        {
-            this.channel = channel;
-        }
+	private static class OutboundChannelHandler extends ChannelOutboundHandlerAdapter {
+		@Override
+		public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+			State state = getOrCreateCurrentState(ctx.channel());
 
-        @Override
-        public Long get()
-        {
-            State state = getOrCreateCurrentState(channel);
-            return state == null ? 0 : state.requestBodySize;
-        }
-    }
+			// Update the response body size with this chunk.
+			if (msg instanceof HttpContent) {
+				state.responseBodySize += ((HttpContent) msg).content().readableBytes();
+			}
 
-    static class ResponseBodySizeProvider implements Provider<Long>
-    {
-        private final Channel channel;
+			super.write(ctx, msg, promise);
+		}
+	}
 
-        public ResponseBodySizeProvider(Channel channel)
-        {
-            this.channel = channel;
-        }
+	private static class State {
+		long requestBodySize = 0;
+		long responseBodySize = 0;
+	}
 
-        @Override
-        public Long get()
-        {
-            State state = getOrCreateCurrentState(channel);
-            return state == null ? 0 : state.responseBodySize;
-        }
-    }
+	static class RequestBodySizeProvider implements Provider<Long> {
+		private final Channel channel;
+
+		public RequestBodySizeProvider(Channel channel) {
+			this.channel = channel;
+		}
+
+		@Override
+		public Long get() {
+			State state = getOrCreateCurrentState(channel);
+			return state == null ? 0 : state.requestBodySize;
+		}
+	}
+
+	static class ResponseBodySizeProvider implements Provider<Long> {
+		private final Channel channel;
+
+		public ResponseBodySizeProvider(Channel channel) {
+			this.channel = channel;
+		}
+
+		@Override
+		public Long get() {
+			State state = getOrCreateCurrentState(channel);
+			return state == null ? 0 : state.responseBodySize;
+		}
+	}
 }

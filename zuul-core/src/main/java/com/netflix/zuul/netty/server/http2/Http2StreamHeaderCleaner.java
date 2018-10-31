@@ -25,27 +25,25 @@ import io.netty.handler.codec.http.HttpRequest;
  * The Http2ServerDowngrader currently is always incorrectly setting the "x-http2-stream-id"
  * header to "0", which is confusing. And as we don't actually need it and the other "x-http2-" headers, we
  * strip them out here to avoid the confusion.
- *
+ * <p>
  * Hopefully in a future netty release that header value will be correct and we can then
  * stop doing this. Although potentially we _never_ want to pass these downstream to origins .... ?
  */
 @ChannelHandler.Sharable
-public class Http2StreamHeaderCleaner extends ChannelInboundHandlerAdapter
-{
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception
-    {
-        if (msg instanceof HttpRequest) {
-            HttpRequest req = (HttpRequest) msg;
+public class Http2StreamHeaderCleaner extends ChannelInboundHandlerAdapter {
+	@Override
+	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+		if (msg instanceof HttpRequest) {
+			HttpRequest req = (HttpRequest) msg;
 
-            for (String name : req.headers().names()) {
-                if (name.startsWith("x-http2-")) {
-                    req.headers().remove(name);
-                }
-            }
-        }
+			for (String name : req.headers().names()) {
+				if (name.startsWith("x-http2-")) {
+					req.headers().remove(name);
+				}
+			}
+		}
 
-        super.channelRead(ctx, msg);
-    }
+		super.channelRead(ctx, msg);
+	}
 }
 

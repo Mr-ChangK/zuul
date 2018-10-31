@@ -27,31 +27,28 @@ import javax.inject.Singleton;
 
 @Singleton
 @ChannelHandler.Sharable
-public class ServerStatusHeaderHandler extends ChannelOutboundHandlerAdapter
-{
-    public static final AsciiString INSTANCE_STATUS_HEADER_NAME = new AsciiString("x-netflix.instance-status");
-    public static final AsciiString INSTANCE_HEALTH_HEADER_NAME = new AsciiString("x-netflix.instance-health");
+public class ServerStatusHeaderHandler extends ChannelOutboundHandlerAdapter {
+	public static final AsciiString INSTANCE_STATUS_HEADER_NAME = new AsciiString("x-netflix.instance-status");
+	public static final AsciiString INSTANCE_HEALTH_HEADER_NAME = new AsciiString("x-netflix.instance-health");
 
-    private final ServerStatusManager serverStatusManager;
+	private final ServerStatusManager serverStatusManager;
 
-    public ServerStatusHeaderHandler(ServerStatusManager serverStatusManager)
-    {
-        this.serverStatusManager = serverStatusManager;
-    }
+	public ServerStatusHeaderHandler(ServerStatusManager serverStatusManager) {
+		this.serverStatusManager = serverStatusManager;
+	}
 
-    @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception
-    {
-        if (msg instanceof HttpResponse) {
-            HttpResponse response = (HttpResponse) msg;
+	@Override
+	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+		if (msg instanceof HttpResponse) {
+			HttpResponse response = (HttpResponse) msg;
 
 //            InstanceInfo.InstanceStatus status = serverStatusManager.status();
 //            response.headers().set(INSTANCE_STATUS_HEADER_NAME, status.name());
 
-            // TODO
-            //response.headers().set(SERVER_HEALTH_HEADER_NAME, serverStatusManager.health());
-        }
+			// TODO
+			//response.headers().set(SERVER_HEALTH_HEADER_NAME, serverStatusManager.health());
+		}
 
-        super.write(ctx, msg, promise);
-    }
+		super.write(ctx, msg, promise);
+	}
 }

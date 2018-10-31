@@ -39,31 +39,31 @@ import org.slf4j.LoggerFactory;
  * Time: 5:41 PM
  */
 public class Http2SslChannelInitializer extends BaseZuulChannelInitializer {
-    private static final Logger LOG = LoggerFactory.getLogger(Http2SslChannelInitializer.class);
-    private static final DummyChannelHandler DUMMY_HANDLER = new DummyChannelHandler();
+	private static final Logger LOG = LoggerFactory.getLogger(Http2SslChannelInitializer.class);
+	private static final DummyChannelHandler DUMMY_HANDLER = new DummyChannelHandler();
 
-    private final ServerSslConfig serverSslConfig;
-    private final SslContext sslContext;
-    private final boolean isSSlFromIntermediary;
+	private final ServerSslConfig serverSslConfig;
+	private final SslContext sslContext;
+	private final boolean isSSlFromIntermediary;
 
 
-    public Http2SslChannelInitializer(int port,
-                                      ChannelConfig channelConfig,
-                                      ChannelConfig channelDependencies,
-                                      ChannelGroup channels) {
-        super(port, channelConfig, channelDependencies, channels);
+	public Http2SslChannelInitializer(int port,
+									  ChannelConfig channelConfig,
+									  ChannelConfig channelDependencies,
+									  ChannelGroup channels) {
+		super(port, channelConfig, channelDependencies, channels);
 
-        this.serverSslConfig = channelConfig.get(CommonChannelConfigKeys.serverSslConfig);
-        this.isSSlFromIntermediary = channelConfig.get(CommonChannelConfigKeys.isSSlFromIntermediary);
+		this.serverSslConfig = channelConfig.get(CommonChannelConfigKeys.serverSslConfig);
+		this.isSSlFromIntermediary = channelConfig.get(CommonChannelConfigKeys.isSSlFromIntermediary);
 
-        SslContextFactory sslContextFactory = channelConfig.get(CommonChannelConfigKeys.sslContextFactory);
-        sslContext = Http2Configuration.configureSSL(sslContextFactory, port);
-    }
+		SslContextFactory sslContextFactory = channelConfig.get(CommonChannelConfigKeys.sslContextFactory);
+		sslContext = Http2Configuration.configureSSL(sslContextFactory, port);
+	}
 
-    @Override
-    protected void initChannel(Channel ch) throws Exception {
-        SslHandler sslHandler = sslContext.newHandler(ch.alloc());
-        sslHandler.engine().setEnabledProtocols(serverSslConfig.getProtocols());
+	@Override
+	protected void initChannel(Channel ch) throws Exception {
+		SslHandler sslHandler = sslContext.newHandler(ch.alloc());
+		sslHandler.engine().setEnabledProtocols(serverSslConfig.getProtocols());
 
 //        SSLParameters sslParameters = new SSLParameters();
 //        AlgorithmConstraints algoConstraints = new AlgorithmConstraints();
@@ -71,47 +71,47 @@ public class Http2SslChannelInitializer extends BaseZuulChannelInitializer {
 //        sslParameters.setUseCipherSuitesOrder(true);
 //        sslHandler.engine().setSSLParameters(sslParameters);
 
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("ssl protocols supported: {}", String.join(", ", sslHandler.engine().getSupportedProtocols()));
-            LOG.debug("ssl protocols enabled: {}", String.join(", ", sslHandler.engine().getEnabledProtocols()));
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("ssl protocols supported: {}", String.join(", ", sslHandler.engine().getSupportedProtocols()));
+			LOG.debug("ssl protocols enabled: {}", String.join(", ", sslHandler.engine().getEnabledProtocols()));
 
-            LOG.debug("ssl ciphers supported: {}", String.join(", ", sslHandler.engine().getSupportedCipherSuites()));
-            LOG.debug("ssl ciphers enabled: {}", String.join(", ", sslHandler.engine().getEnabledCipherSuites()));
-        }
+			LOG.debug("ssl ciphers supported: {}", String.join(", ", sslHandler.engine().getSupportedCipherSuites()));
+			LOG.debug("ssl ciphers enabled: {}", String.join(", ", sslHandler.engine().getEnabledCipherSuites()));
+		}
 
-        // Configure our pipeline of ChannelHandlerS.
-        ChannelPipeline pipeline = ch.pipeline();
+		// Configure our pipeline of ChannelHandlerS.
+		ChannelPipeline pipeline = ch.pipeline();
 
-        storeChannel(ch);
-        addTimeoutHandlers(pipeline);
-        addPassportHandler(pipeline);
-        addTcpRelatedHandlers(pipeline);
-        pipeline.addLast(new Http2FrameLoggingPerClientIpHandler());
-        pipeline.addLast("ssl", sslHandler);
-        addSslInfoHandlers(pipeline, isSSlFromIntermediary);
-        addSslClientCertChecks(pipeline);
+		storeChannel(ch);
+		addTimeoutHandlers(pipeline);
+		addPassportHandler(pipeline);
+		addTcpRelatedHandlers(pipeline);
+		pipeline.addLast(new Http2FrameLoggingPerClientIpHandler());
+		pipeline.addLast("ssl", sslHandler);
+		addSslInfoHandlers(pipeline, isSSlFromIntermediary);
+		addSslClientCertChecks(pipeline);
 
-        Http2MetricsChannelHandlers http2MetricsChannelHandlers = new Http2MetricsChannelHandlers(registry,"server", "http2-" + port);
-        Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(channelConfig.get(CommonChannelConfigKeys.connCloseDelay), registry);
-        Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry);
+		Http2MetricsChannelHandlers http2MetricsChannelHandlers = new Http2MetricsChannelHandlers(registry, "server", "http2-" + port);
+		Http2ConnectionCloseHandler connectionCloseHandler = new Http2ConnectionCloseHandler(channelConfig.get(CommonChannelConfigKeys.connCloseDelay), registry);
+		Http2ConnectionExpiryHandler connectionExpiryHandler = new Http2ConnectionExpiryHandler(maxRequestsPerConnection, maxRequestsPerConnectionInBrownout, connectionExpiry);
 
-        pipeline.addLast("http2CodecSwapper", new Http2OrHttpHandler(
-                new Http2StreamInitializer(ch, this::http1Handlers, http2MetricsChannelHandlers, connectionCloseHandler, connectionExpiryHandler),
-                channelConfig,
-                cp -> {
-                    http1Codec(cp);
-                    http1Handlers(cp);
-                }));
-        pipeline.addLast("codec_placeholder", DUMMY_HANDLER);
-    }
+		pipeline.addLast("http2CodecSwapper", new Http2OrHttpHandler(
+				new Http2StreamInitializer(ch, this::http1Handlers, http2MetricsChannelHandlers, connectionCloseHandler, connectionExpiryHandler),
+				channelConfig,
+				cp -> {
+					http1Codec(cp);
+					http1Handlers(cp);
+				}));
+		pipeline.addLast("codec_placeholder", DUMMY_HANDLER);
+	}
 
-    protected void http1Handlers(ChannelPipeline pipeline) {
-        addHttpRelatedHandlers(pipeline);
-        addZuulHandlers(pipeline);
-    }
+	protected void http1Handlers(ChannelPipeline pipeline) {
+		addHttpRelatedHandlers(pipeline);
+		addZuulHandlers(pipeline);
+	}
 
-    protected void http1Codec(ChannelPipeline pipeline) {
-        pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, createHttpServerCodec());
-    }
+	protected void http1Codec(ChannelPipeline pipeline) {
+		pipeline.replace("codec_placeholder", HTTP_CODEC_HANDLER_NAME, createHttpServerCodec());
+	}
 }
 

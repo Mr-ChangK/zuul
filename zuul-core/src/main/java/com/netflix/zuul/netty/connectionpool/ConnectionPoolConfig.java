@@ -21,38 +21,38 @@ package com.netflix.zuul.netty.connectionpool;
  */
 public interface ConnectionPoolConfig {
 
-    /* Origin name from connection pool */
-    String getOriginName();
+	/* Origin name from connection pool */
+	String getOriginName();
 
-    /* Max number of requests per connection before it needs to be recycled */
-    int getMaxRequestsPerConnection();
+	/* Max number of requests per connection before it needs to be recycled */
+	int getMaxRequestsPerConnection();
 
-    /* Max connections per host */
-    int maxConnectionsPerHost();
+	/* Max connections per host */
+	int maxConnectionsPerHost();
 
-    int perServerWaterline();
+	int perServerWaterline();
 
-    /* Origin client TCP configuration options */
-    int getConnectTimeout();
+	/* Origin client TCP configuration options */
+	int getConnectTimeout();
 
-    /* number of milliseconds connection can stay idle in a connection pool before it is closed */
-    int getIdleTimeout();
+	/* number of milliseconds connection can stay idle in a connection pool before it is closed */
+	int getIdleTimeout();
 
-    int getTcpReceiveBufferSize();
+	int getTcpReceiveBufferSize();
 
-    int getTcpSendBufferSize();
+	int getTcpSendBufferSize();
 
-    int getNettyWriteBufferHighWaterMark();
+	int getNettyWriteBufferHighWaterMark();
 
-    int getNettyWriteBufferLowWaterMark();
+	int getNettyWriteBufferLowWaterMark();
 
-    boolean getTcpKeepAlive();
+	boolean getTcpKeepAlive();
 
-    boolean getTcpNoDelay();
+	boolean getTcpNoDelay();
 
-    boolean getNettyAutoRead();
+	boolean getNettyAutoRead();
 
-    boolean isSecure();
+	boolean isSecure();
 
-    boolean useIPAddrForServer();
+	boolean useIPAddrForServer();
 }

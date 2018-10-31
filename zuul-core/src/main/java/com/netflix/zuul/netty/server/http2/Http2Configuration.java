@@ -27,46 +27,44 @@ import javax.net.ssl.SSLException;
 
 public class Http2Configuration {
 
-    private static final DynamicBooleanProperty HTTP2_DISABLED =
-            new DynamicBooleanProperty("zuul.server.http2.disabled", false);
+	private static final DynamicBooleanProperty HTTP2_DISABLED =
+			new DynamicBooleanProperty("zuul.server.http2.disabled", false);
 
 
-    public static SslContext configureSSL(SslContextFactory sslContextFactory, int port) {
-        SslContextBuilder builder = sslContextFactory.createBuilderForServer();
+	public static SslContext configureSSL(SslContextFactory sslContextFactory, int port) {
+		SslContextBuilder builder = sslContextFactory.createBuilderForServer();
 
-        String[] supportedProtocol;
-        if (HTTP2_DISABLED.get()) {
-            supportedProtocol = new String[]{ApplicationProtocolNames.HTTP_1_1};
-        }
-        else {
-            supportedProtocol = new String[]{ApplicationProtocolNames.HTTP_2,
-                    ApplicationProtocolNames.HTTP_1_1};
-        }
+		String[] supportedProtocol;
+		if (HTTP2_DISABLED.get()) {
+			supportedProtocol = new String[]{ApplicationProtocolNames.HTTP_1_1};
+		} else {
+			supportedProtocol = new String[]{ApplicationProtocolNames.HTTP_2,
+					ApplicationProtocolNames.HTTP_1_1};
+		}
 
-        ApplicationProtocolConfig apn = new ApplicationProtocolConfig(
-                ApplicationProtocolConfig.Protocol.ALPN,
-                // NO_ADVERTISE is currently the only mode supported by both OpenSsl and JDK providers.
-                ApplicationProtocolConfig.SelectorFailureBehavior.NO_ADVERTISE,
-                // ACCEPT is currently the only mode supported by both OpenSsl and JDK providers.
-                ApplicationProtocolConfig.SelectedListenerFailureBehavior.ACCEPT,
-                supportedProtocol);
+		ApplicationProtocolConfig apn = new ApplicationProtocolConfig(
+				ApplicationProtocolConfig.Protocol.ALPN,
+				// NO_ADVERTISE is currently the only mode supported by both OpenSsl and JDK providers.
+				ApplicationProtocolConfig.SelectorFailureBehavior.NO_ADVERTISE,
+				// ACCEPT is currently the only mode supported by both OpenSsl and JDK providers.
+				ApplicationProtocolConfig.SelectedListenerFailureBehavior.ACCEPT,
+				supportedProtocol);
 
-        final SslContext sslContext;
-        try {
-            sslContext = builder
-                    .applicationProtocolConfig(apn)
-                    .build();
-        }
-        catch (SSLException e) {
-            throw new RuntimeException("Error configuring SslContext with ALPN!", e);
-        }
+		final SslContext sslContext;
+		try {
+			sslContext = builder
+					.applicationProtocolConfig(apn)
+					.build();
+		} catch (SSLException e) {
+			throw new RuntimeException("Error configuring SslContext with ALPN!", e);
+		}
 
-        // Enable TLS Session Tickets support.
-        sslContextFactory.enableSessionTickets(sslContext);
+		// Enable TLS Session Tickets support.
+		sslContextFactory.enableSessionTickets(sslContext);
 
-        // Setup metrics tracking the OpenSSL stats.
-        sslContextFactory.configureOpenSslStatsMetrics(sslContext, Integer.toString(port));
+		// Setup metrics tracking the OpenSSL stats.
+		sslContextFactory.configureOpenSslStatsMetrics(sslContext, Integer.toString(port));
 
-        return sslContext;
-    }
+		return sslContext;
+	}
 }

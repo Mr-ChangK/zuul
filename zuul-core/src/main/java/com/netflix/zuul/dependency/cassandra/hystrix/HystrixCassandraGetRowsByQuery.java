@@ -31,74 +31,74 @@ import com.netflix.zuul.dependency.cassandra.CassandraCache;
  */
 public class HystrixCassandraGetRowsByQuery<RowKeyType> extends AbstractCassandraHystrixCommand<Rows<RowKeyType, String>> {
 
-    private final Keyspace keyspace;
-    private final ColumnFamily<RowKeyType, String> columnFamily;
-    private final String cql;
+	private final Keyspace keyspace;
+	private final ColumnFamily<RowKeyType, String> columnFamily;
+	private final String cql;
 
-    private CassandraCache<Rows<RowKeyType, String>> fallbackCache = null;
+	private CassandraCache<Rows<RowKeyType, String>> fallbackCache = null;
 
-    /**
-     * Get rows specified by their row keys.
-     *
-     * @param keyspace
-     * @param columnFamily
-     * @param cql
-     */
-    public HystrixCassandraGetRowsByQuery(Keyspace keyspace, ColumnFamily<RowKeyType, String> columnFamily, String cql) {
-        this.keyspace = keyspace;
-        this.columnFamily = columnFamily;
-        this.cql = cql;
-    }
+	/**
+	 * Get rows specified by their row keys.
+	 *
+	 * @param keyspace
+	 * @param columnFamily
+	 * @param cql
+	 */
+	public HystrixCassandraGetRowsByQuery(Keyspace keyspace, ColumnFamily<RowKeyType, String> columnFamily, String cql) {
+		this.keyspace = keyspace;
+		this.columnFamily = columnFamily;
+		this.cql = cql;
+	}
 
-    /**
-     * Get rows specified by their row keys.
-     *
-     * @param keyspace
-     * @param columnFamilyName
-     * @param cql
-     */
-    @SuppressWarnings("unchecked")
-    public HystrixCassandraGetRowsByQuery(Keyspace keyspace, String columnFamilyName, Class<?> columnFamilyKeyType, String cql) {
-        this.keyspace = keyspace;
-        this.columnFamily = getColumnFamilyViaColumnName(columnFamilyName, columnFamilyKeyType);
-        this.cql = cql;
-    }
+	/**
+	 * Get rows specified by their row keys.
+	 *
+	 * @param keyspace
+	 * @param columnFamilyName
+	 * @param cql
+	 */
+	@SuppressWarnings("unchecked")
+	public HystrixCassandraGetRowsByQuery(Keyspace keyspace, String columnFamilyName, Class<?> columnFamilyKeyType, String cql) {
+		this.keyspace = keyspace;
+		this.columnFamily = getColumnFamilyViaColumnName(columnFamilyName, columnFamilyKeyType);
+		this.cql = cql;
+	}
 
-    @Override
-    protected Rows<RowKeyType, String> run() throws Exception {
-        try {
-            CqlResult<RowKeyType, String> cqlresult = keyspace.prepareQuery(columnFamily).withCql(cql).execute().getResult();
-            Rows<RowKeyType, String> result = cqlresult.getRows();
-            if (fallbackCache != null) {
-                try {
-                    /* store the response in the cache for fallback if we have a cache */
-                    fallbackCache.storeQuery(result, keyspace.toString(), columnFamily.getName(), cql);
-                } catch (Exception e) {
-                    // don't blow up on cache population since this is non-essential
-                }
-            }
-            return result;
-        } catch (ConnectionException e) {
-            throw e;
-        }
-    }
+	@Override
+	protected Rows<RowKeyType, String> run() throws Exception {
+		try {
+			CqlResult<RowKeyType, String> cqlresult = keyspace.prepareQuery(columnFamily).withCql(cql).execute().getResult();
+			Rows<RowKeyType, String> result = cqlresult.getRows();
+			if (fallbackCache != null) {
+				try {
+					/* store the response in the cache for fallback if we have a cache */
+					fallbackCache.storeQuery(result, keyspace.toString(), columnFamily.getName(), cql);
+				} catch (Exception e) {
+					// don't blow up on cache population since this is non-essential
+				}
+			}
+			return result;
+		} catch (ConnectionException e) {
+			throw e;
+		}
+	}
 
-    /**
-     * Optionally define a cache to retrieve values from for fallback if the query fails.
-     * <p/>
-     * Idiomatic usage: new ADCCassandraSelect(args).setCache(cache).execute()
-     *
-     * @param cache
-     * @return
-     */
-    public HystrixCassandraGetRowsByQuery<RowKeyType> setCache(CassandraCache<Rows<RowKeyType, String>> cache) {
-        this.fallbackCache = cache;
-        return this;
-    }
+	/**
+	 * Optionally define a cache to retrieve values from for fallback if the query fails.
+	 * <p/>
+	 * Idiomatic usage: new ADCCassandraSelect(args).setCache(cache).execute()
+	 *
+	 * @param cache
+	 * @return
+	 */
+	public HystrixCassandraGetRowsByQuery<RowKeyType> setCache(CassandraCache<Rows<RowKeyType, String>> cache) {
+		this.fallbackCache = cache;
+		return this;
+	}
 
-    @Override
-    protected Rows<RowKeyType, String> getFallback() {
-        return (this.fallbackCache != null) ? this.fallbackCache.fetchQuery() : null;
-    }
+	@Override
+	protected Rows<RowKeyType, String> getFallback() {
+		return (this.fallbackCache != null) ? this.fallbackCache.fetchQuery() : null;
+	}
 
 }

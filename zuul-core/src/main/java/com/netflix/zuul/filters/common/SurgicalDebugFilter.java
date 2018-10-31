@@ -34,60 +34,60 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
  */
 public class SurgicalDebugFilter extends HttpInboundSyncFilter {
 
-    /**
-     * Returning true by the pattern or logic implemented in this method will route the request to the specified origin
-     *
-     * Override this method when using this filter to add your own pattern matching logic.
-     *
-     * @return true if this request should be routed to the debug origin
-     */
-    protected boolean patternMatches(HttpRequestMessage request) {
-        return false;
-    }
+	/**
+	 * Returning true by the pattern or logic implemented in this method will route the request to the specified origin
+	 * <p>
+	 * Override this method when using this filter to add your own pattern matching logic.
+	 *
+	 * @return true if this request should be routed to the debug origin
+	 */
+	protected boolean patternMatches(HttpRequestMessage request) {
+		return false;
+	}
 
-    @Override
-    public int filterOrder() {
-        return 99;
-    }
+	@Override
+	public int filterOrder() {
+		return 99;
+	}
 
-    @Override
-    public boolean shouldFilter(HttpRequestMessage request) {
+	@Override
+	public boolean shouldFilter(HttpRequestMessage request) {
 
-        DynamicBooleanProperty debugFilterShutoff = new DynamicBooleanProperty(ZuulConstants.ZUUL_DEBUGFILTERS_DISABLED, false);
+		DynamicBooleanProperty debugFilterShutoff = new DynamicBooleanProperty(ZuulConstants.ZUUL_DEBUGFILTERS_DISABLED, false);
 
-        if (debugFilterShutoff.get()) return false;
+		if (debugFilterShutoff.get()) return false;
 
-        if (isDisabled()) return false;
+		if (isDisabled()) return false;
 
-        String isSurgicalFilterRequest = request.getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER);
-        // dont' apply filter if it was already applied
-        boolean notAlreadyFiltered = !("true".equals(isSurgicalFilterRequest));
+		String isSurgicalFilterRequest = request.getHeaders().getFirst(ZuulHeaders.X_ZUUL_SURGICAL_FILTER);
+		// dont' apply filter if it was already applied
+		boolean notAlreadyFiltered = !("true".equals(isSurgicalFilterRequest));
 
-        return notAlreadyFiltered && patternMatches(request);
-    }
+		return notAlreadyFiltered && patternMatches(request);
+	}
 
 
-    @Override
-    public HttpRequestMessage apply(HttpRequestMessage request) {
-        DynamicStringProperty routeVip = new DynamicStringProperty(ZuulConstants.ZUUL_DEBUG_VIP, null);
-        DynamicStringProperty routeHost = new DynamicStringProperty(ZuulConstants.ZUUL_DEBUG_HOST, null);
+	@Override
+	public HttpRequestMessage apply(HttpRequestMessage request) {
+		DynamicStringProperty routeVip = new DynamicStringProperty(ZuulConstants.ZUUL_DEBUG_VIP, null);
+		DynamicStringProperty routeHost = new DynamicStringProperty(ZuulConstants.ZUUL_DEBUG_HOST, null);
 
-        SessionContext ctx = request.getContext();
+		SessionContext ctx = request.getContext();
 
-        if (routeVip.get() != null || routeHost.get() != null) {
+		if (routeVip.get() != null || routeHost.get() != null) {
 
-            ctx.set("routeHost", routeHost.get());
-            ctx.set("routeVIP", routeVip.get());
+			ctx.set("routeHost", routeHost.get());
+			ctx.set("routeVIP", routeVip.get());
 
-            request.getHeaders().set(ZuulHeaders.X_ZUUL_SURGICAL_FILTER, "true");
+			request.getHeaders().set(ZuulHeaders.X_ZUUL_SURGICAL_FILTER, "true");
 
-            HttpQueryParams queryParams = request.getQueryParams();
-            queryParams.set("debugRequest", "true");
+			HttpQueryParams queryParams = request.getQueryParams();
+			queryParams.set("debugRequest", "true");
 
-            ctx.setDebugRequest(true);
-            ctx.set("zuulToZuul", true);
+			ctx.setDebugRequest(true);
+			ctx.set("zuulToZuul", true);
 
-        }
-        return request;
-    }
+		}
+		return request;
+	}
 }

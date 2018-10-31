@@ -24,48 +24,49 @@ import com.netflix.zuul.message.ZuulMessage;
  * Date: 7/15/15
  * Time: 1:18 PM
  */
-public interface HttpRequestInfo extends ZuulMessage
-{
-    String getProtocol();
+public interface HttpRequestInfo extends ZuulMessage {
+	String getProtocol();
 
-    String getMethod();
+	String getMethod();
 
-    String getPath();
+	String getPath();
 
-    HttpQueryParams getQueryParams();
+	HttpQueryParams getQueryParams();
 
-    String getPathAndQuery();
+	String getPathAndQuery();
 
-    Headers getHeaders();
+	Headers getHeaders();
 
-    String getClientIp();
+	String getClientIp();
 
-    String getScheme();
+	String getScheme();
 
-    int getPort();
+	int getPort();
 
-    String getServerName();
+	String getServerName();
 
-    int getMaxBodySize();
+	int getMaxBodySize();
 
-    String getInfoForLogging();
+	String getInfoForLogging();
 
-    String getOriginalHost();
+	String getOriginalHost();
 
-    String getOriginalScheme();
+	String getOriginalScheme();
 
-    String getOriginalProtocol();
+	String getOriginalProtocol();
 
-    int getOriginalPort();
+	int getOriginalPort();
 
-    String reconstructURI();
+	String reconstructURI();
 
-    /** Parse and lazily cache the request cookies. */
-    Cookies parseCookies();
+	/**
+	 * Parse and lazily cache the request cookies.
+	 */
+	Cookies parseCookies();
 
-    /**
-     * Force parsing/re-parsing of the cookies. May want to do this if headers
-     * have been mutated since cookies were first parsed.
-     */
-    Cookies reParseCookies();
+	/**
+	 * Force parsing/re-parsing of the cookies. May want to do this if headers
+	 * have been mutated since cookies were first parsed.
+	 */
+	Cookies reParseCookies();
 }

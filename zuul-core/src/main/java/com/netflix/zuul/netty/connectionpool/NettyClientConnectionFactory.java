@@ -22,11 +22,7 @@ import com.netflix.zuul.netty.server.Server;
 import com.netflix.zuul.passport.CurrentPassport;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ZuulBootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoop;
+import io.netty.channel.*;
 import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
@@ -40,53 +36,53 @@ import java.net.SocketAddress;
  */
 public class NettyClientConnectionFactory {
 
-    private final ConnectionPoolConfig connPoolConfig;
-    private final ChannelInitializer<? extends Channel> channelInitializer;
-    private final Counter unresolvedDiscoveryHost;
+	private final ConnectionPoolConfig connPoolConfig;
+	private final ChannelInitializer<? extends Channel> channelInitializer;
+	private final Counter unresolvedDiscoveryHost;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NettyClientConnectionFactory.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(NettyClientConnectionFactory.class);
 
 
-    NettyClientConnectionFactory(final ConnectionPoolConfig connPoolConfig,
-                                 final ChannelInitializer<? extends Channel> channelInitializer) {
-        this.connPoolConfig = connPoolConfig;
-        this.channelInitializer = channelInitializer;
-        this.unresolvedDiscoveryHost = SpectatorUtils.newCounter("unresolvedDiscoveryHost",
-                connPoolConfig.getOriginName() == null ? "unknownOrigin" : connPoolConfig.getOriginName());
-    }
+	NettyClientConnectionFactory(final ConnectionPoolConfig connPoolConfig,
+								 final ChannelInitializer<? extends Channel> channelInitializer) {
+		this.connPoolConfig = connPoolConfig;
+		this.channelInitializer = channelInitializer;
+		this.unresolvedDiscoveryHost = SpectatorUtils.newCounter("unresolvedDiscoveryHost",
+				connPoolConfig.getOriginName() == null ? "unknownOrigin" : connPoolConfig.getOriginName());
+	}
 
-    public ChannelFuture connect(final EventLoop eventLoop, String host, final int port, CurrentPassport passport) {
+	public ChannelFuture connect(final EventLoop eventLoop, String host, final int port, CurrentPassport passport) {
 
-        Class socketChannelClass;
-        if (Server.USE_EPOLL.get()) {
-            socketChannelClass = EpollSocketChannel.class;
-        } else {
-            socketChannelClass = NioSocketChannel.class;
-        }
+		Class socketChannelClass;
+		if (Server.USE_EPOLL.get()) {
+			socketChannelClass = EpollSocketChannel.class;
+		} else {
+			socketChannelClass = NioSocketChannel.class;
+		}
 
-        SocketAddress socketAddress = new InetSocketAddress(host, port);
+		SocketAddress socketAddress = new InetSocketAddress(host, port);
 
-        final Bootstrap bootstrap = new Bootstrap()
-                .channel(socketChannelClass)
-                .handler(channelInitializer)
-                .group(eventLoop)
-                .attr(CurrentPassport.CHANNEL_ATTR, passport)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connPoolConfig.getConnectTimeout())
-                .option(ChannelOption.SO_KEEPALIVE, connPoolConfig.getTcpKeepAlive())
-                .option(ChannelOption.TCP_NODELAY, connPoolConfig.getTcpNoDelay())
-                .option(ChannelOption.SO_SNDBUF, connPoolConfig.getTcpSendBufferSize())
-                .option(ChannelOption.SO_RCVBUF, connPoolConfig.getTcpReceiveBufferSize())
-                .option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, connPoolConfig.getNettyWriteBufferHighWaterMark())
-                .option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, connPoolConfig.getNettyWriteBufferLowWaterMark())
-                .option(ChannelOption.AUTO_READ, connPoolConfig.getNettyAutoRead())
-                .remoteAddress(socketAddress);
+		final Bootstrap bootstrap = new Bootstrap()
+				.channel(socketChannelClass)
+				.handler(channelInitializer)
+				.group(eventLoop)
+				.attr(CurrentPassport.CHANNEL_ATTR, passport)
+				.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connPoolConfig.getConnectTimeout())
+				.option(ChannelOption.SO_KEEPALIVE, connPoolConfig.getTcpKeepAlive())
+				.option(ChannelOption.TCP_NODELAY, connPoolConfig.getTcpNoDelay())
+				.option(ChannelOption.SO_SNDBUF, connPoolConfig.getTcpSendBufferSize())
+				.option(ChannelOption.SO_RCVBUF, connPoolConfig.getTcpReceiveBufferSize())
+				.option(ChannelOption.WRITE_BUFFER_HIGH_WATER_MARK, connPoolConfig.getNettyWriteBufferHighWaterMark())
+				.option(ChannelOption.WRITE_BUFFER_LOW_WATER_MARK, connPoolConfig.getNettyWriteBufferLowWaterMark())
+				.option(ChannelOption.AUTO_READ, connPoolConfig.getNettyAutoRead())
+				.remoteAddress(socketAddress);
 
-        ZuulBootstrap zuulBootstrap = new ZuulBootstrap(bootstrap);
-        if (!zuulBootstrap.getResolver(eventLoop).isResolved(socketAddress)) {
-            LOGGER.warn("NettyClientConnectionFactory got an unresolved server address, host: " + host + ", port: " + port);
-            unresolvedDiscoveryHost.increment();
-        }
-        return bootstrap.connect();
-    }
+		ZuulBootstrap zuulBootstrap = new ZuulBootstrap(bootstrap);
+		if (!zuulBootstrap.getResolver(eventLoop).isResolved(socketAddress)) {
+			LOGGER.warn("NettyClientConnectionFactory got an unresolved server address, host: " + host + ", port: " + port);
+			unresolvedDiscoveryHost.increment();
+		}
+		return bootstrap.connect();
+	}
 
 }

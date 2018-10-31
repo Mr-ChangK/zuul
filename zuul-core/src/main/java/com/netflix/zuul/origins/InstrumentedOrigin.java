@@ -25,15 +25,15 @@ import com.netflix.zuul.message.http.HttpRequestMessage;
  */
 public interface InstrumentedOrigin extends Origin {
 
-    double getErrorPercentage();
+	double getErrorPercentage();
 
-    double getErrorAllPercentage();
+	double getErrorAllPercentage();
 
-    void adjustRetryPolicyIfNeeded(HttpRequestMessage zuulRequest);
+	void adjustRetryPolicyIfNeeded(HttpRequestMessage zuulRequest);
 
-    void preRequestChecks(HttpRequestMessage zuulRequest);
+	void preRequestChecks(HttpRequestMessage zuulRequest);
 
-    void recordSuccessResponse();
+	void recordSuccessResponse();
 
-    void recordProxyRequestEnd();
+	void recordProxyRequestEnd();
 }

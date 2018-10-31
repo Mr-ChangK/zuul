@@ -32,127 +32,127 @@ import java.util.Map;
  * Polls a persistent store for new or changes Filters
  *
  * @author Mikey Cohen
- *         Date: 6/15/12
- *         Time: 3:44 PM
+ * Date: 6/15/12
+ * Time: 3:44 PM
  */
 public class ZuulFilterPoller {
 
-    Map<String, FilterInfo> runningFilters = new HashMap<String, FilterInfo>();
-    ZuulFilterDAO dao;
+	Map<String, FilterInfo> runningFilters = new HashMap<String, FilterInfo>();
+	ZuulFilterDAO dao;
 
-    DynamicBooleanProperty active = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_USE_ACTIVE_FILTERS, true);
-    DynamicBooleanProperty canary = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_USE_CANARY_FILTERS, false);
-
-
-    private static ZuulFilterPoller INSTANCE;
+	DynamicBooleanProperty active = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_USE_ACTIVE_FILTERS, true);
+	DynamicBooleanProperty canary = DynamicPropertyFactory.getInstance().getBooleanProperty(ZuulConstants.ZUUL_USE_CANARY_FILTERS, false);
 
 
-    /**
-     * Starts the check against the ZuulFilter data store for changed or new filters.
-     *
-     * @param dao
-     */
-    public static void start(ZuulFilterDAO dao) {
-
-        INSTANCE = new ZuulFilterPoller(dao);
-
-    }
+	private static ZuulFilterPoller INSTANCE;
 
 
-    /**
-     * constructor that passes in a dao
-     *
-     * @param dao
-     */
-    public ZuulFilterPoller(ZuulFilterDAO dao) {
-        this.dao = dao;
-        checkerThread.start();
+	/**
+	 * Starts the check against the ZuulFilter data store for changed or new filters.
+	 *
+	 * @param dao
+	 */
+	public static void start(ZuulFilterDAO dao) {
 
-    }
+		INSTANCE = new ZuulFilterPoller(dao);
 
-    /**
-     * @return a Singleton
-     */
-    public static ZuulFilterPoller getInstance() {
-        return INSTANCE;
-    }
+	}
 
 
-    boolean running = true;
-    private long INTERVAL = 30000; //30 seconds
-    Thread checkerThread = new Thread("ZuulFilterPoller") {
-        public void run() {
-            while (running) {
-                try {
+	/**
+	 * constructor that passes in a dao
+	 *
+	 * @param dao
+	 */
+	public ZuulFilterPoller(ZuulFilterDAO dao) {
+		this.dao = dao;
+		checkerThread.start();
 
-                    if (canary.get()) {
-                        HashMap<String, FilterInfo> setFilters = new HashMap<String, FilterInfo>();
+	}
 
-                        List<FilterInfo> activeScripts = dao.getAllActiveFilters();
-                        if (activeScripts != null) {
-                            for (FilterInfo newFilter : activeScripts) {
-                                setFilters.put(newFilter.getFilterID(), newFilter);
-                            }
-                        }
+	/**
+	 * @return a Singleton
+	 */
+	public static ZuulFilterPoller getInstance() {
+		return INSTANCE;
+	}
 
-                        List<FilterInfo> canaryScripts = dao.getAllCanaryFilters();
-                        if (canaryScripts != null) {
-                            for (FilterInfo newFilter : canaryScripts) {
-                                setFilters.put(newFilter.getFilterID(), newFilter);
-                            }
-                        }
-                        for (FilterInfo next : setFilters.values()) {
-                            doFilterCheck(next);
-                        }
-                    } else if (active.get()) {
-                        List<FilterInfo> newFilters = dao.getAllActiveFilters();
-                        if (newFilters == null) continue;
-                        for (FilterInfo newFilter : newFilters) {
-                            doFilterCheck(newFilter);
-                        }
 
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
+	boolean running = true;
+	private long INTERVAL = 30000; //30 seconds
+	Thread checkerThread = new Thread("ZuulFilterPoller") {
+		public void run() {
+			while (running) {
+				try {
 
-                try {
-                    sleep(INTERVAL);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                    running = false;
-                }
-            }
-        }
-    };
+					if (canary.get()) {
+						HashMap<String, FilterInfo> setFilters = new HashMap<String, FilterInfo>();
 
-    private void doFilterCheck(FilterInfo newFilter) throws IOException {
-        FilterInfo existingFilter = runningFilters.get(newFilter.getFilterID());
-        if (existingFilter == null || !existingFilter.equals(newFilter)) {
-            System.out.println("adding filter to disk" + newFilter.toString());
-            writeFilterToDisk(newFilter);
-            runningFilters.put(newFilter.getFilterID(), newFilter);
-        }
-    }
+						List<FilterInfo> activeScripts = dao.getAllActiveFilters();
+						if (activeScripts != null) {
+							for (FilterInfo newFilter : activeScripts) {
+								setFilters.put(newFilter.getFilterID(), newFilter);
+							}
+						}
 
-    private void writeFilterToDisk(FilterInfo newFilter) throws IOException {
+						List<FilterInfo> canaryScripts = dao.getAllCanaryFilters();
+						if (canaryScripts != null) {
+							for (FilterInfo newFilter : canaryScripts) {
+								setFilters.put(newFilter.getFilterID(), newFilter);
+							}
+						}
+						for (FilterInfo next : setFilters.values()) {
+							doFilterCheck(next);
+						}
+					} else if (active.get()) {
+						List<FilterInfo> newFilters = dao.getAllActiveFilters();
+						if (newFilters == null) continue;
+						for (FilterInfo newFilter : newFilters) {
+							doFilterCheck(newFilter);
+						}
 
-        String path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_PRE_PATH, null).get();
-        if (newFilter.getFilterType().equals(FilterType.OUTBOUND)) {
-            path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_POST_PATH, null).get();
-        }
-        if (newFilter.getFilterType().equals(FilterType.ENDPOINT)) {
-            path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_ROUTING_PATH, null).get();
-        }
+					}
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
 
-        File f = new File(path, newFilter.getFilterName() + ".groovy");
-        FileWriter file = new FileWriter(f);
-        BufferedWriter out = new BufferedWriter(file);
-        out.write(newFilter.getFilterCode());
-        out.close();
-        file.close();
-        System.out.println("filter written " + f.getPath());
-    }
+				try {
+					sleep(INTERVAL);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+					running = false;
+				}
+			}
+		}
+	};
+
+	private void doFilterCheck(FilterInfo newFilter) throws IOException {
+		FilterInfo existingFilter = runningFilters.get(newFilter.getFilterID());
+		if (existingFilter == null || !existingFilter.equals(newFilter)) {
+			System.out.println("adding filter to disk" + newFilter.toString());
+			writeFilterToDisk(newFilter);
+			runningFilters.put(newFilter.getFilterID(), newFilter);
+		}
+	}
+
+	private void writeFilterToDisk(FilterInfo newFilter) throws IOException {
+
+		String path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_PRE_PATH, null).get();
+		if (newFilter.getFilterType().equals(FilterType.OUTBOUND)) {
+			path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_POST_PATH, null).get();
+		}
+		if (newFilter.getFilterType().equals(FilterType.ENDPOINT)) {
+			path = DynamicPropertyFactory.getInstance().getStringProperty(ZuulConstants.ZUUL_FILTER_ROUTING_PATH, null).get();
+		}
+
+		File f = new File(path, newFilter.getFilterName() + ".groovy");
+		FileWriter file = new FileWriter(f);
+		BufferedWriter out = new BufferedWriter(file);
+		out.write(newFilter.getFilterCode());
+		out.close();
+		file.close();
+		System.out.println("filter written " + f.getPath());
+	}
 
 
 }

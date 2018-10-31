@@ -24,45 +24,47 @@ import com.netflix.hystrix.HystrixCommandGroupKey;
 
 /**
  * Abstract Hystrix wrapper for Astyanax Cassandra calls
+ *
  * @param <K>
  */
 public abstract class AbstractCassandraHystrixCommand<K> extends HystrixCommand<K> {
 
 
-
-    public AbstractCassandraHystrixCommand() {
-        super(HystrixCommandGroupKey.Factory.asKey("Cassandra"));
+	public AbstractCassandraHystrixCommand() {
+		super(HystrixCommandGroupKey.Factory.asKey("Cassandra"));
 	}
 
 
-    /**
-     * returns a ColumnFamily given a columnFamilyName
-     * @param columnFamilyName
-     * @param rowKey
-     * @return
-     */
-    @SuppressWarnings("rawtypes")
-    protected ColumnFamily getColumnFamilyViaColumnName(String columnFamilyName, Object rowKey) {
-        return getColumnFamilyViaColumnName(columnFamilyName, rowKey.getClass());
-    }
+	/**
+	 * returns a ColumnFamily given a columnFamilyName
+	 *
+	 * @param columnFamilyName
+	 * @param rowKey
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
+	protected ColumnFamily getColumnFamilyViaColumnName(String columnFamilyName, Object rowKey) {
+		return getColumnFamilyViaColumnName(columnFamilyName, rowKey.getClass());
+	}
 
-    /**
-     * returns a ColumnFamily given a columnFamilyName
-     * @param columnFamilyName
-     * @param rowKeyClass
-     * @return
-     */
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected ColumnFamily getColumnFamilyViaColumnName(String columnFamilyName, Class rowKeyClass) {
-        if (rowKeyClass == String.class) {
-            return new ColumnFamily(columnFamilyName, StringSerializer.get(), StringSerializer.get());
-        } else if (rowKeyClass == Integer.class) {
-            return new ColumnFamily(columnFamilyName, IntegerSerializer.get(), StringSerializer.get());
-        } else if (rowKeyClass == Long.class) {
-            return new ColumnFamily(columnFamilyName, LongSerializer.get(), StringSerializer.get());
-        } else {
-            throw new IllegalArgumentException("RowKeyType is not supported: " + rowKeyClass.getSimpleName() + ". String/Integer/Long are supported, or you can define the ColumnFamily yourself and use the other constructor.");
-        }
-    }
+	/**
+	 * returns a ColumnFamily given a columnFamilyName
+	 *
+	 * @param columnFamilyName
+	 * @param rowKeyClass
+	 * @return
+	 */
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	protected ColumnFamily getColumnFamilyViaColumnName(String columnFamilyName, Class rowKeyClass) {
+		if (rowKeyClass == String.class) {
+			return new ColumnFamily(columnFamilyName, StringSerializer.get(), StringSerializer.get());
+		} else if (rowKeyClass == Integer.class) {
+			return new ColumnFamily(columnFamilyName, IntegerSerializer.get(), StringSerializer.get());
+		} else if (rowKeyClass == Long.class) {
+			return new ColumnFamily(columnFamilyName, LongSerializer.get(), StringSerializer.get());
+		} else {
+			throw new IllegalArgumentException("RowKeyType is not supported: " + rowKeyClass.getSimpleName() + ". String/Integer/Long are supported, or you can define the ColumnFamily yourself and use the other constructor.");
+		}
+	}
 
 }

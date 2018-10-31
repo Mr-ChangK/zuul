@@ -18,22 +18,22 @@ package com.netflix.zuul.stats.status;
 
 /**
  * Zuul Status Category Group
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: December 20, 2017
  */
 public enum ZuulStatusCategoryGroup implements StatusCategoryGroup {
-    SUCCESS(1),
-    FAILURE(2);
+	SUCCESS(1),
+	FAILURE(2);
 
-    private final int id;
+	private final int id;
 
-    ZuulStatusCategoryGroup(int id) {
-        this.id = id;
-    }
+	ZuulStatusCategoryGroup(int id) {
+		this.id = id;
+	}
 
-    @Override
-    public int getId() {
-        return id;
-    }
+	@Override
+	public int getId() {
+		return id;
+	}
 }

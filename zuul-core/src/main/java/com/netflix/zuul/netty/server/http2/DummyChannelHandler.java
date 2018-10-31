@@ -21,18 +21,20 @@ import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Dummy Channel Handler
- *
+ * <p>
  * Author: Arthur Gonigberg
  * Date: December 15, 2017
  */
-public class DummyChannelHandler implements ChannelHandler
-{
-    @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {}
+public class DummyChannelHandler implements ChannelHandler {
+	@Override
+	public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+	}
 
-    @Override
-    public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {}
+	@Override
+	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
+	}
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {}
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+	}
 }
