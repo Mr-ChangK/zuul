@@ -47,21 +47,17 @@ import com.netflix.zuul.stats.RequestMetricsPublisher;
 public class ZuulSampleModule extends AbstractModule {
 	@Override
 	protected void configure() {
-		// sample specific bindings
 		// 启动器
 		bind(BaseServerStartup.class).to(SampleServerStartup.class);
 		bind(EurekaInstanceConfig.class).to(MyDataCenterInstanceConfig.class);
 
-		// use provided basic netty origin manager
 		// 基础NettyOriginManager
 		bind(OriginManager.class).to(BasicNettyOriginManager.class);
 
-		// zuul filter loading
 		// 添加ZuulFilterModule绑定类型
 		install(new ZuulFiltersModule());
-		// 恶汉单例模式
+		// 恶汉单例模式的FilterFileManager
 		bind(FilterFileManager.class).asEagerSingleton();
-		// general server bindings
 		// 服务器状态管理
 		bind(ServerStatusManager.class); // health/discovery status
 		// 请求接入时的Session装饰器

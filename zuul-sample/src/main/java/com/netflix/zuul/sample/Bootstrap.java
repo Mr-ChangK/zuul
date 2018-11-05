@@ -42,14 +42,17 @@ public class Bootstrap {
 		Server server = null;
 
 		try {
+			// 读取properties配置
 			ConfigurationManager.loadCascadedPropertiesFromResources("application");
+			// IOC容器依赖注入
 			Injector injector = InjectorBuilder.fromModule(new ZuulSampleModule()).createInjector();
 			BaseServerStartup serverStartup = injector.getInstance(BaseServerStartup.class);
+			// 获取已构建的服务
 			server = serverStartup.server();
 
 			long startupDuration = System.currentTimeMillis() - startTime;
 			System.out.println("Zuul Sample: finished startup. Duration = " + startupDuration + " ms");
-
+			// 启动服务
 			server.start(true);
 		} catch (Throwable t) {
 			t.printStackTrace();
