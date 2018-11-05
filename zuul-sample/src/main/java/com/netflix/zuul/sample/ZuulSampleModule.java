@@ -17,6 +17,8 @@
 package com.netflix.zuul.sample;
 
 import com.google.inject.AbstractModule;
+import com.netflix.appinfo.EurekaInstanceConfig;
+import com.netflix.appinfo.MyDataCenterInstanceConfig;
 import com.netflix.discovery.AbstractDiscoveryClientOptionalArgs;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.netty.common.accesslog.AccessLogPublisher;
@@ -46,18 +48,25 @@ public class ZuulSampleModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		// sample specific bindings
+		// 启动器
 		bind(BaseServerStartup.class).to(SampleServerStartup.class);
+		bind(EurekaInstanceConfig.class).to(MyDataCenterInstanceConfig.class);
 
 		// use provided basic netty origin manager
+		// 基础NettyOriginManager
 		bind(OriginManager.class).to(BasicNettyOriginManager.class);
 
 		// zuul filter loading
+		// 添加ZuulFilterModule绑定类型
 		install(new ZuulFiltersModule());
+		// 恶汉单例模式
 		bind(FilterFileManager.class).asEagerSingleton();
-
 		// general server bindings
+		// 服务器状态管理
 		bind(ServerStatusManager.class); // health/discovery status
+		// 请求接入时的Session装饰器
 		bind(SessionContextDecorator.class).to(ZuulSessionContextDecorator.class); // decorate new sessions when requests come in
+		//
 		bind(Registry.class).to(DefaultRegistry.class); // atlas metrics registry
 		bind(RequestCompleteHandler.class).to(BasicRequestCompleteHandler.class); // metrics post-request completion
 		bind(AbstractDiscoveryClientOptionalArgs.class).to(DiscoveryClient.DiscoveryClientOptionalArgs.class); // discovery client
