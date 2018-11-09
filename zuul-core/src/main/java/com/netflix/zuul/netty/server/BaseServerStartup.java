@@ -93,15 +93,18 @@ public abstract class BaseServerStartup {
 
 	@PostConstruct
 	public void init() throws Exception {
+		// Channel的一些配置管理
 		ChannelConfig channelDeps = new ChannelConfig();
+		// 添加一些Channel的依赖
 		addChannelDependencies(channelDeps);
-
+		// Channel组
 		ChannelGroup clientChannels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+		// 客户端关闭
 		clientConnectionsShutdown = new ClientConnectionsShutdown(clientChannels,
 				GlobalEventExecutor.INSTANCE, discoveryClient);
-
+		// 构建端口和指定的ChannelInitializer
 		portsToChannelInitializers = choosePortsAndChannels(clientChannels, channelDeps);
-
+		// 根据上面的信息构建Server
 		server = new Server(portsToChannelInitializers, serverStatusManager, clientConnectionsShutdown, eventLoopGroupMetrics);
 	}
 

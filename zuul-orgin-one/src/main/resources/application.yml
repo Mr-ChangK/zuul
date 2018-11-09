@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: origin-one
+eureka:
+  client:
+    service-url:
+      defaultZone: http://127.0.0.1:10010/eureka/
+server:
+  port: 10001

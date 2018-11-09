@@ -57,7 +57,7 @@ public class ZuulSessionContextDecorator implements SessionContextDecorator {
 
 		Channel channel = nettyCtx.channel();
 
-		// set injected origin manager
+		// 添加已经注入的OriginManager
 		ctx.put(CommonContextKeys.ORIGIN_MANAGER, originManager);
 
 		// TODO
@@ -65,16 +65,17 @@ public class ZuulSessionContextDecorator implements SessionContextDecorator {
         ThrottleResult throttleResult = channel.attr(HttpRequestThrottleChannelHandler.ATTR_THROTTLE_RESULT).get();
         ctx.set(CommonContextKeys.THROTTLE_RESULT, throttleResult);*/
 
-		// Add a container for request attempts info.
+		// 声明一个用于存储Request尝试信息的容器，默认是一个ArrayList
 		ctx.put(CommonContextKeys.REQUEST_ATTEMPTS, new RequestAttempts());
 
-		// Providers for getting the size of read/written request and response body sizes from channel.
+		// 从当前Channel中获取记录RequestBody大小和Response大小的记录
 		ctx.set(CommonContextKeys.REQ_BODY_SIZE_PROVIDER, HttpBodySizeRecordingChannelHandler.getCurrentRequestBodySize(channel));
 		ctx.set(CommonContextKeys.RESP_BODY_SIZE_PROVIDER, HttpBodySizeRecordingChannelHandler.getCurrentResponseBodySize(channel));
 
+		// 获取请求通行证，它是基于纳秒时间记录的关于请求瞬时状态
 		CurrentPassport passport = CurrentPassport.fromChannel(channel);
 		ctx.set(CommonContextKeys.PASSPORT, passport);
-
+		// 生成对应的UUID
 		ctx.setUUID(UUID_FACTORY.generateRandomUuid().toString());
 
 		return ctx;

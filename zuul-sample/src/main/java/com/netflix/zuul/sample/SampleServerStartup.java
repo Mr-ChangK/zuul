@@ -89,16 +89,16 @@ public class SampleServerStartup extends BaseServerStartup {
 	protected Map<Integer, ChannelInitializer> choosePortsAndChannels(
 			ChannelGroup clientChannels,
 			ChannelConfig channelDependencies) {
+		// 放入到ChannelPipeline中的渠道信息
 		Map<Integer, ChannelInitializer> portsToChannels = new HashMap<>();
-
+		// 获取Zuul服务的启动端口，默认为7001
 		int port = new DynamicIntProperty("zuul.server.port.main", 7001).get();
-
+		// 首先加载默认的Channel配置
 		ChannelConfig channelConfig = BaseServerStartup.defaultChannelConfig();
+		// 获取推送端口，默认的推送端口是7008
 		int pushPort = new DynamicIntProperty("zuul.server.port.http.push", 7008).get();
 		ServerSslConfig sslConfig;
-		/* These settings may need to be tweaked depending if you're running behind an ELB HTTP listener, TCP listener,
-		 * or directly on the internet.
-		 */
+		// 下面这些配置的调整依赖于你是否在ELB Http监听器、TCP监听器或者直接放在互联网上
 		switch (SERVER_TYPE) {
 			/* The below settings can be used when running behind an ELB HTTP listener that terminates SSL for you
 			 * and passes XFF headers.

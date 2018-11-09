@@ -28,23 +28,23 @@ import com.netflix.zuul.context.SessionContext;
 public class BasicRequestMetricsPublisher implements RequestMetricsPublisher {
 	@Override
 	public void collectAndPublish(SessionContext context) {
-		// Request timings.
+		// 请求的时间点
 		long totalRequestTime = context.getTimings().getRequest().getDuration();
 		long requestProxyTime = context.getTimings().getRequestProxy().getDuration();
+		// Origin的处理时间
 		int originReportedDuration = context.getOriginReportedDuration();
 
-		// Approximation of time spent just within Zuul's own processing of the request.
+		// Zuul处理Request的时间
 		long totalInternalTime = totalRequestTime - requestProxyTime;
 
-		// Approximation of time added to request by addition of Zuul+NIWS
-		// (ie. the time added compared to if ELB sent request direct to Origin).
-		// if -1, means we don't have that metric.
+		// 计算一下路由到Origin的时间
+		// 如果值是-1，证明我们没有这个计数
 		long totalTimeAddedToOrigin = -1;
 		if (originReportedDuration > -1) {
 			totalTimeAddedToOrigin = totalRequestTime - originReportedDuration;
 		}
 
-		// Publish
+		// 发布记录的时间
 		final String METRIC_TIMINGS_REQ_PREFIX = "zuul.timings.request.";
 		recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "total", totalRequestTime);
 		recordRequestTiming(METRIC_TIMINGS_REQ_PREFIX + "proxy", requestProxyTime);

@@ -22,8 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * Maintains client identity to web socket or SSE channel mapping.
- *
+ * 维持Websocket或者SSE渠道的客户端验证映射关系
+ * 实现方式concurrenthashmap
  * Created by saroskar on 9/26/16.
  */
 @Singleton

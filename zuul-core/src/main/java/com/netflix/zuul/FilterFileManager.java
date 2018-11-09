@@ -50,6 +50,9 @@ import static org.mockito.Mockito.*;
  * This class manages the directory polling for changes and new Groovy filters.
  * Polling interval and directories are specified in the initialization of the class, and a poller will check
  * for changes and additions.
+ * 用于管理轮询的变化和新的Groovy过滤器
+ * 轮询内部和目录都是指定已实现的类
+ * 会有一个轮询来检查变化和添加的东西
  *
  * @author Mikey Cohen
  * Date: 12/7/11
@@ -73,16 +76,17 @@ public class FilterFileManager {
 	public FilterFileManager(FilterFileManagerConfig config, FilterLoader filterLoader) {
 		this.config = config;
 		this.filterLoader = filterLoader;
-
+		// 制作线程工厂
 		BasicThreadFactory threadFactory = new BasicThreadFactory.Builder()
 				.namingPattern("FilterFileManager_ProcessFiles-%d")
 				.build();
+		// 线程池默认一个线程
 		this.processFilesService = Executors.newFixedThreadPool(FILE_PROCESSOR_THREADS.get(), threadFactory);
 	}
 
 
 	/**
-	 * Initialized the GroovyFileManager.
+	 * 实例化GroovyFileManager
 	 *
 	 * @throws Exception
 	 */
@@ -181,6 +185,7 @@ public class FilterFileManager {
 		for (File file : aFiles) {
 			tasks.add(() -> {
 				try {
+					// 添加filter
 					return filterLoader.putFilter(file);
 				} catch (Exception e) {
 					LOG.error("Error loading groovy filter from disk! file = " + String.valueOf(file), e);

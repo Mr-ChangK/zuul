@@ -112,11 +112,11 @@ public class FilterLoader {
 
 
 	/**
-	 * From a file this will read the ZuulFilter source code, compile it, and add it to the list of current filters
-	 * a true response means that it was successful.
+	 * 会从文件中读取对应的ZuulFilter的源码并编译它，然后添加到现有的filter中
+	 * 如果返回一个true，那么代表它是成功的
 	 *
 	 * @param file
-	 * @return true if the filter in file successfully read, compiled, verified and added to Zuul
+	 * @return true代表已经读取、编译、添加到Zuul中了
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws IOException
@@ -145,12 +145,21 @@ public class FilterLoader {
 		return false;
 	}
 
+	/**
+	 * 添加新的Filter
+	 *
+	 * @param sName
+	 * @param filter
+	 * @param lastModified
+	 */
 	void putFilter(String sName, ZuulFilter filter, long lastModified) {
+		// 获取当前的FilterType列表
 		List<ZuulFilter> list = hashFiltersByType.get(filter.filterType());
 		if (list != null) {
-			hashFiltersByType.remove(filter.filterType()); //rebuild this list
+			// 如果存在同种类型的filter，直接重构
+			hashFiltersByType.remove(filter.filterType());
 		}
-
+		// 添加filter
 		String nameAndType = filter.filterType() + ":" + filter.filterName();
 		filtersByNameAndType.put(nameAndType, filter);
 

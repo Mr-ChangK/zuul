@@ -37,10 +37,9 @@ import java.util.*;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Represents the context between client and origin server for the duration of the dedicated connection/session
- * between them. But we're currently still only modelling single request/response pair per session.
- * <p>
- * NOTE: Not threadsafe, and not intended to be used concurrently.
+ * 客户端和Origin Server之间的上下文信息
+ * 目前还是每个Session只会映射一组request/response
+ * 注意：还不是线程安全的，并且并不打算在并发中使用此类。。。
  */
 public class SessionContext extends HashMap<String, Object> implements Cloneable {
 	private static final int INITIAL_SIZE =

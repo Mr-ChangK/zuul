@@ -40,39 +40,139 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public interface NettyOrigin extends InstrumentedOrigin {
 
+	/**
+	 * 连接Origin
+	 *
+	 * @param zuulReq
+	 * @param eventLoop
+	 * @param attemptNumber
+	 * @param passport
+	 * @param chosenServer
+	 * @param chosenHostAddr
+	 * @return
+	 */
 	Promise<PooledConnection> connectToOrigin(final HttpRequestMessage zuulReq, EventLoop eventLoop,
 											  int attemptNumber, CurrentPassport passport,
 											  AtomicReference<Server> chosenServer,
 											  AtomicReference<String> chosenHostAddr);
 
+	/**
+	 * 获取代理时间节点
+	 *
+	 * @param zuulReq
+	 * @return
+	 */
 	Timing getProxyTiming(HttpRequestMessage zuulReq);
 
+	/**
+	 * 获取Request的最大请求次数
+	 *
+	 * @param context
+	 * @return
+	 */
 	int getMaxRetriesForRequest(SessionContext context);
 
+	/**
+	 * 请求开始执行
+	 *
+	 * @param zuulReq
+	 */
 	void onRequestExecutionStart(final HttpRequestMessage zuulReq);
 
+	/**
+	 * 带有请求源的请求开始执行
+	 *
+	 * @param zuulReq
+	 * @param originServer
+	 * @param attemptNum
+	 */
 	void onRequestStartWithServer(final HttpRequestMessage zuulReq, final Server originServer, int attemptNum);
 
+	/**
+	 * 带有请求源的请求执行异常
+	 *
+	 * @param zuulReq
+	 * @param originServer
+	 * @param attemptNum
+	 * @param t
+	 */
 	void onRequestExceptionWithServer(final HttpRequestMessage zuulReq, final Server originServer,
 									  final int attemptNum, Throwable t);
 
+	/**
+	 * 请求执行成功
+	 *
+	 * @param zuulReq
+	 * @param zuulResp
+	 * @param originServer
+	 * @param attemptNum
+	 */
 	void onRequestExecutionSuccess(final HttpRequestMessage zuulReq, final HttpResponseMessage zuulResp,
 								   final Server originServer, final int attemptNum);
 
+	/**
+	 * 请求执行失败
+	 *
+	 * @param zuulReq
+	 * @param originServer
+	 * @param attemptNum
+	 * @param t
+	 */
 	void onRequestExecutionFailed(final HttpRequestMessage zuulReq, final Server originServer,
 								  final int attemptNum, Throwable t);
 
+	/**
+	 * 记录最后一次错误
+	 *
+	 * @param requestMsg
+	 * @param throwable
+	 */
 	void recordFinalError(final HttpRequestMessage requestMsg, final Throwable throwable);
 
+	/**
+	 * 记录最后一次响应
+	 *
+	 * @param resp
+	 */
 	void recordFinalResponse(final HttpResponseMessage resp);
 
+	/**
+	 * 新请求尝试
+	 *
+	 * @param server
+	 * @param zuulCtx
+	 * @param attemptNum
+	 * @return
+	 */
 	RequestAttempt newRequestAttempt(final Server server, final SessionContext zuulCtx, int attemptNum);
 
+	/**
+	 * 从服务端获取IP地址
+	 *
+	 * @param server
+	 * @return
+	 */
 	String getIpAddrFromServer(Server server);
 
+	/**
+	 * 获取客户端的配置
+	 *
+	 * @return
+	 */
 	IClientConfig getClientConfig();
 
+	/**
+	 * 获取观察者注册
+	 *
+	 * @return
+	 */
 	Registry getSpectatorRegistry();
 
+	/**
+	 * 获取执行的上下文环境
+	 *
+	 * @param zuulRequest
+	 * @return
+	 */
 	ExecutionContext<?> getExecutionContext(HttpRequestMessage zuulRequest);
 }

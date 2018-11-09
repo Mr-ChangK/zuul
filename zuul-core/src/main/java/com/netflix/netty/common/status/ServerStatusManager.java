@@ -48,6 +48,8 @@ public class ServerStatusManager {
 		// in Discovery, although the StatusChangeEvent does get fired, the _local_ InstanceStatus (ie.
 		// applicationInfoManager.getInfo().getStatus()) does not get changed to reflect that.
 		// So that's why I'm doing this little dance here of looking at both remote and local statuses.
+		// 注意：如果你本地debug到这里，你会发现服务发现中，这个实例已经变为OUT_OF_SERVICE，但是StatusChangeEvent并没有什么异常，本地的InstanceStatus并没有变化来映射这个
+		// 所以这是我为什么会做如下一个校验来全部观察远端和本地的状态
 
 		InstanceInfo.InstanceStatus local = localStatus();
 		InstanceInfo.InstanceStatus remote = remoteStatus();

@@ -38,7 +38,7 @@ public class BasicRequestCompleteHandler implements RequestCompleteHandler {
 	public void handle(HttpRequestInfo inboundRequest, HttpResponseMessage response) {
 		SessionContext context = inboundRequest.getContext();
 
-		// Publish request-level metrics.
+		// 发布关于Request的一些计数数据
 		if (requestMetricsPublisher != null) {
 			requestMetricsPublisher.collectAndPublish(context);
 		}

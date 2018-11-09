@@ -50,10 +50,11 @@ public class ZuulFiltersModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		LOG.info("Starting Groovy Filter file manager");
-
+		// Groovy动态脚本编译
 		bind(DynamicCodeCompiler.class).to(GroovyCompiler.class);
+		// 基于ZuulFilter的注入容器，获取出来的对象均是ZuulFilter类型
 		bind(FilterFactory.class).to(GuiceFilterFactory.class);
-
+		// ZuulFilter的一个使用次数的通知器
 		bind(FilterUsageNotifier.class).to(BasicFilterUsageNotifier.class);
 
 		LOG.info("Groovy Filter file manager started");
@@ -61,13 +62,13 @@ public class ZuulFiltersModule extends AbstractModule {
 
 	@Provides
 	FilterFileManagerConfig provideFilterFileManagerConfig() {
-		// Get filter directories.
+		// 获取filter的综合信息
 		final AbstractConfiguration config = ConfigurationManager.getConfigInstance();
 
 		String[] filterLocations = findFilterLocations(config);
 		String[] filterClassNames = findClassNames(config);
 
-		// Init the FilterStore.
+		// 实例化已知的过滤器
 		FilterFileManagerConfig filterConfig = new FilterFileManagerConfig(filterLocations, filterClassNames, 5);
 		return filterConfig;
 	}

@@ -49,6 +49,9 @@ class Routes extends HttpInboundSyncFilter {
         // Route healthchecks to the healthcheck endpoint.;
         if (path.equalsIgnoreCase("/healthcheck")) {
             context.setEndpoint(Healthcheck.class.getCanonicalName())
+        } else if (path.contains("/origin/one")) {
+            context.setEndpoint(ZuulEndPointRunner.PROXY_ENDPOINT_FILTER_NAME);
+            context.setRouteVIP("origin-one")
         } else {
             context.setEndpoint(ZuulEndPointRunner.PROXY_ENDPOINT_FILTER_NAME);
             context.setRouteVIP("api")

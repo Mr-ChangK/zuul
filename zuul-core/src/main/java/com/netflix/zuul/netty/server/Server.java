@@ -60,14 +60,33 @@ public class Server {
 
 	private static final DynamicBooleanProperty USE_LEASTCONNS_FOR_EVENTLOOPS = new DynamicBooleanProperty("zuul.server.eventloops.use_leastconns", false);
 
+	/**
+	 * EventLoopGroupMetrics
+	 */
 	private final EventLoopGroupMetrics eventLoopGroupMetrics;
-
+	/**
+	 * jvm关闭的钩子线程
+	 */
 	private final Thread jvmShutdownHook;
+	/**
+	 * 服务组
+	 */
 	private ServerGroup serverGroup;
+	/**
+	 * 客户端关闭
+	 */
 	private final ClientConnectionsShutdown clientConnectionsShutdown;
+	/**
+	 * Server的状态管理
+	 */
 	private final ServerStatusManager serverStatusManager;
-
+	/**
+	 * 端口-ChannelInitializer容器
+	 */
 	private final Map<Integer, ChannelInitializer> portsToChannelInitializers;
+	/**
+	 * EventLoop配置
+	 */
 	private final EventLoopConfig eventLoopConfig;
 
 	public Server(Map<Integer, ChannelInitializer> portsToChannelInitializers, ServerStatusManager serverStatusManager, ClientConnectionsShutdown clientConnectionsShutdown, EventLoopGroupMetrics eventLoopGroupMetrics) {
@@ -85,10 +104,11 @@ public class Server {
 
 	public void stop() {
 		LOG.warn("Shutting down Zuul.");
+		// 停止服务，加锁
 		serverGroup.stop();
 
-		// remove the shutdown hook that was added when the proxy was started, since it has now been stopped
 		try {
+			// 去除钩子函数
 			Runtime.getRuntime().removeShutdownHook(jvmShutdownHook);
 		} catch (IllegalStateException e) {
 			// ignore -- IllegalStateException means the VM is already shutting down
@@ -98,19 +118,20 @@ public class Server {
 	}
 
 	public void start(boolean sync) {
+		// 设置服务组的接收线程数量和工作线程数量，以及计数器
 		serverGroup = new ServerGroup("Salamander", eventLoopConfig.acceptorCount(), eventLoopConfig.eventLoopCount(), eventLoopGroupMetrics);
+		// 创建模型线程池
 		serverGroup.initializeTransport();
 		try {
 			List<ChannelFuture> allBindFutures = new ArrayList<>();
 
-			// Setup each of the channel initializers on requested ports.
 			for (Map.Entry<Integer, ChannelInitializer> entry : portsToChannelInitializers.entrySet()) {
+				// 根据端口和ChannelInitializer，添加对应的ChannelFuture任务
 				allBindFutures.add(setupServerBootstrap(entry.getKey(), entry.getValue()));
 			}
 
-			// Once all server bootstraps are successfully initialized, then bind to each port.
 			for (ChannelFuture f : allBindFutures) {
-				// Wait until the server socket is closed.
+				// 等待服务关闭
 				ChannelFuture cf = f.channel().closeFuture();
 				if (sync) {
 					cf.sync();
@@ -122,7 +143,7 @@ public class Server {
 	}
 
 	/**
-	 * This is just for use in unit-testing.
+	 * 单元测试中使用的
 	 */
 	public void waitForEachEventLoop() throws InterruptedException, ExecutionException {
 		for (EventExecutor exec : serverGroup.clientToProxyWorkerPool) {
@@ -134,11 +155,12 @@ public class Server {
 
 	private ChannelFuture setupServerBootstrap(int port, ChannelInitializer channelInitializer)
 			throws InterruptedException {
+		// 使用Netty的ServerBootstrap构建主线程池和工作线程池
 		ServerBootstrap serverBootstrap = new ServerBootstrap().group(
 				serverGroup.clientToProxyBossPool,
 				serverGroup.clientToProxyWorkerPool);
 
-		// Choose socket options.
+		// 处理socket参数
 		Map<ChannelOption, Object> channelOptions = new HashMap<>();
 		channelOptions.put(ChannelOption.SO_BACKLOG, 128);
 		//channelOptions.put(ChannelOption.SO_TIMEOUT, SERVER_SOCKET_TIMEOUT.get());
@@ -146,7 +168,7 @@ public class Server {
 		channelOptions.put(ChannelOption.TCP_NODELAY, true);
 		channelOptions.put(ChannelOption.SO_KEEPALIVE, true);
 
-		// Choose EPoll or NIO.
+		// 判断是使用epoll还是NIO
 		if (USE_EPOLL.get()) {
 			LOG.warn("Proxy listening with TCP transport using EPOLL");
 			serverBootstrap = serverBootstrap.channel(EpollServerSocketChannel.class);
@@ -156,20 +178,22 @@ public class Server {
 			serverBootstrap = serverBootstrap.channel(NioServerSocketChannel.class);
 		}
 
-		// Apply socket options.
+		// 向serverBootstrap中注入socket参数
 		for (Map.Entry<ChannelOption, Object> optionEntry : channelOptions.entrySet()) {
 			serverBootstrap = serverBootstrap.option(optionEntry.getKey(), optionEntry.getValue());
 		}
 
+		//
 		serverBootstrap.childHandler(channelInitializer);
+		// 校验Netty的ChannelHandler和工作线程是否存在
 		serverBootstrap.validate();
 
 		LOG.info("Binding to port: " + port);
 
-		// Flag status as UP just before binding to the port.
+		// 绑定端口前先更改Server状态
 		serverStatusManager.localStatus(InstanceInfo.InstanceStatus.UP);
 
-		// Bind and start to accept incoming connections.
+		// 阻塞直到绑定端口成功
 		return serverBootstrap.bind(port).sync();
 	}
 
@@ -186,16 +210,32 @@ public class Server {
 
 	private class ServerGroup {
 		/**
-		 * A name for this ServerGroup to use in naming threads.
+		 * 用户标记线程名称的服务组名称
 		 */
 		private final String name;
+		/**
+		 * 接收线程数量
+		 */
 		private final int acceptorThreads;
+		/**
+		 * 工作线程数量
+		 */
 		private final int workerThreads;
+		/**
+		 * EventLoopGroup的计数器
+		 */
 		private final EventLoopGroupMetrics eventLoopGroupMetrics;
-
+		/**
+		 * 客户端和管理线程池
+		 */
 		private EventLoopGroup clientToProxyBossPool;
+		/**
+		 * 客户端和代理工作线程池
+		 */
 		private EventLoopGroup clientToProxyWorkerPool;
-
+		/**
+		 * 是否停止
+		 */
 		private volatile boolean stopped = false;
 
 		private ServerGroup(String name, int acceptorThreads, int workerThreads, EventLoopGroupMetrics eventLoopGroupMetrics) {
@@ -215,6 +255,7 @@ public class Server {
 
 		private void initializeTransport() {
 			// TODO - try our own impl of ChooserFactory that load-balances across the eventloops using leastconns algo?
+			// EventExecutor的选择器，用于轮询下一个EventExecutor
 			EventExecutorChooserFactory chooserFactory;
 			if (USE_LEASTCONNS_FOR_EVENTLOOPS.get()) {
 				chooserFactory = new LeastConnsEventLoopChooserFactory(eventLoopGroupMetrics);
@@ -225,10 +266,12 @@ public class Server {
 			ThreadFactory workerThreadFactory = new CategorizedThreadFactory(name + "-ClientToZuulWorker");
 			Executor workerExecutor = new ThreadPerTaskExecutor(workerThreadFactory);
 
+			// 如果使用epoll模式
 			if (USE_EPOLL.get()) {
 				clientToProxyBossPool = new EpollEventLoopGroup(
 						acceptorThreads,
 						new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+				// 客户端代理工作线程池使用的是epoll模型线程池
 				clientToProxyWorkerPool = new EpollEventLoopGroup(
 						workerThreads,
 						workerExecutor,
@@ -239,6 +282,7 @@ public class Server {
 				clientToProxyBossPool = new NioEventLoopGroup(
 						acceptorThreads,
 						new CategorizedThreadFactory(name + "-ClientToZuulAcceptor"));
+				// 否则，会使用NIO模式的线程池
 				clientToProxyWorkerPool = new NioEventLoopGroup(
 						workerThreads,
 						workerExecutor,
@@ -246,9 +290,11 @@ public class Server {
 						SelectorProvider.provider(),
 						DefaultSelectStrategyFactory.INSTANCE
 				);
+				// 设置执行IO操作的比值，默认是50
 				((NioEventLoopGroup) clientToProxyWorkerPool).setIoRatio(90);
 			}
 
+			// 创建完客户端的管理线程池和工作线程池的的后置处理
 			postEventLoopCreationHook(clientToProxyBossPool, clientToProxyWorkerPool);
 		}
 
@@ -259,15 +305,12 @@ public class Server {
 				return;
 			}
 
-			// Flag status as down.
 			// TODO - is this _only_ changing the local status? And therefore should we also implement a HealthCheckHandler
-			// that we can flag to return DOWN here (would that then update Discovery? or still be a delay?)
+			// 设置当前Server状态为DOWN
 			serverStatusManager.localStatus(InstanceInfo.InstanceStatus.DOWN);
 
-			// Shutdown each of the client connections (blocks until complete).
-			// NOTE: ClientConnectionsShutdown can also be configured to gracefully close connections when the
-			// discovery status changes to DOWN. So if it has been configured that way, then this will be an additional
-			// call to gracefullyShutdownClientChannels(), which will be a noop.
+			// 优雅的停止客户端连接
+			// 核心思想方法是关闭所有的Channel，将Channel的close()事件放入到ChannelFuture中，然后等待所有ChannelFuture完成
 			clientConnectionsShutdown.gracefullyShutdownClientChannels();
 
 			LOG.warn("Shutting down event loops");
@@ -275,11 +318,13 @@ public class Server {
 			allEventLoopGroups.add(clientToProxyBossPool);
 			allEventLoopGroups.add(clientToProxyWorkerPool);
 			for (EventLoopGroup group : allEventLoopGroups) {
+				// 优雅的停止EventLoopGroup
 				group.shutdownGracefully();
 			}
 
 			for (EventLoopGroup group : allEventLoopGroups) {
 				try {
+					// 等待20秒确认EventLoopGroup停止
 					group.awaitTermination(20, TimeUnit.SECONDS);
 				} catch (InterruptedException ie) {
 					LOG.warn("Interrupted while shutting down event loop");
