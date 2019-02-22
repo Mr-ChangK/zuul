@@ -16,7 +16,7 @@
 package com.netflix.zuul.event;
 
 /**
- * Simple event class
+ * Zuul简单事件
  *
  * @author Mikey Cohen
  * Date: 3/22/13

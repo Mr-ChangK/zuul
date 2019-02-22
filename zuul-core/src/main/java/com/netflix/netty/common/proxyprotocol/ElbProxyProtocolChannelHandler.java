@@ -31,11 +31,8 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Copies any decoded HAProxyMessage into the channel attributes, and doesn't pass
- * it any further along the pipeline.
- * <p>
- * Use in conjunction with OptionalHAProxyMessageDecoder if ProxyProtocol is enabled on the ELB.
- * <p>
+ * 将任何HAProxyMessage拷贝到Channel属性中，然后不会在pipeline中继续处理它
+ * 如果ELB上的代理协议可用，那么可以结合使用OptionalHAProxyMessageDecoder
  * User: michaels@netflix.com
  * Date: 3/24/16
  * Time: 11:59 AM
@@ -55,7 +52,7 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
 
 	/**
 	 * Setup the required handlers on pipeline using this method.
-	 *
+	 * 在pipeline上安装需要使用的handlers
 	 * @param pipeline
 	 */
 	public void addProxyProtocol(ChannelPipeline pipeline) {
@@ -68,6 +65,7 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+		// 如果可以使用代理协议，那么逐个设置channel的值
 		if (withProxyProtocol) {
 			if (msg instanceof HAProxyMessage && msg != null) {
 				HAProxyMessage hapm = (HAProxyMessage) msg;
@@ -81,8 +79,7 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
 					channel.attr(SourceAddressChannelHandler.ATTR_LOCAL_PORT).set(hapm.destinationPort());
 				}
 
-				// Get the real client IP from the ProxyProtocol message sent by the ELB, and overwrite the SourceAddress
-				// channel attribute.
+				// 获取真实的客户端请求IP，并覆盖原有的SourceAddress
 				String sourceAddress = hapm.sourceAddress();
 				if (sourceAddress != null) {
 					channel.attr(SourceAddressChannelHandler.ATTR_SOURCE_ADDRESS).set(sourceAddress);
@@ -92,6 +89,7 @@ public class ElbProxyProtocolChannelHandler extends ChannelInboundHandlerAdapter
 				// PPV2 passes dynamic fields in TLV format which
 				// HAProxyMessage decodes into bytebufs retaining
 				// refCounts..call release to avoid bytebuf leaks
+				//
 				List<HAProxyTLV> haProxyTLVList = hapm.tlvs();
 				if (haProxyTLVList != null) {
 					logger.debug("Decoded PPV2 TLV list count: {}, List: {}", haProxyTLVList.size(), haProxyTLVList);

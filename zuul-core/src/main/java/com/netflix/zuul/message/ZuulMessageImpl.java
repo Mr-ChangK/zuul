@@ -41,11 +41,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
+ * ZuulMessage的实现
  * User: michaels@netflix.com
  * Date: 2/20/15
  * Time: 3:10 PM
  */
 public class ZuulMessageImpl implements ZuulMessage {
+	/**
+	 * ZuulMessage消息体的最大值，来自于配置文件的zuul.message.body.max.size属性
+	 */
 	protected static final DynamicIntProperty MAX_BODY_SIZE_PROP = DynamicPropertyFactory.getInstance().getIntProperty(
 			"zuul.message.body.max.size", 25 * 1000 * 1024);
 	private static final Charset CS_UTF8 = Charset.forName("UTF-8");
@@ -108,6 +112,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 	public void bufferBodyContents(final HttpContent chunk) {
 		setHasBody(true);
 		bodyChunks.add(chunk);
+		// LastHttpContent代表一个HttpRequest的结束，同时可能包含头的尾部信息
 		if (chunk instanceof LastHttpContent) {
 			bodyBufferedCompletely = true;
 		}
@@ -122,10 +127,14 @@ public class ZuulMessageImpl implements ZuulMessage {
 	public void setBodyAsText(String bodyText) {
 		disposeBufferedBody();
 		if (!Strings.isNullOrEmpty(bodyText)) {
+			// 将bodyText进行UTF-8编码，并生成一个ByteBuf
 			final ByteBuf content = Unpooled.copiedBuffer(bodyText.getBytes(Charsets.UTF_8));
+			// 重新缓存Body内容
 			bufferBodyContents(new DefaultLastHttpContent(content));
+			// 设置Http内容的长度
 			setContentLength(bodyText.getBytes(CS_UTF8).length);
 		} else {
+			// 缓存一个空的Body，同时设置内容长度为0
 			bufferBodyContents(new DefaultLastHttpContent());
 			setContentLength(0);
 		}
@@ -134,6 +143,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 	@Override
 	public void setBody(byte[] body) {
 		disposeBufferedBody();
+		// 由于是字节数组，可以直接通过NIO缓冲区缓存到body中
 		if (body != null && body.length > 0) {
 			final ByteBuf content = Unpooled.copiedBuffer(body);
 			bufferBodyContents(new DefaultLastHttpContent(content));
@@ -147,6 +157,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 	@Override
 	public String getBodyAsText() {
 		final byte[] body = getBody();
+		// 获取body的内容，类型为String
 		return (body != null && body.length > 0) ? new String(getBody(), Charsets.UTF_8) : null;
 	}
 
@@ -155,7 +166,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 		if (bodyChunks.size() == 0) {
 			return null;
 		}
-
+		// 获取body的内容，类型为字节数组
 		int size = 0;
 		for (final HttpContent chunk : bodyChunks) {
 			size += chunk.content().readableBytes();
@@ -173,6 +184,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 
 	@Override
 	public int getBodyLength() {
+		// 获取body的长度
 		int size = 0;
 		for (final HttpContent chunk : bodyChunks) {
 			size += chunk.content().readableBytes();
@@ -182,11 +194,13 @@ public class ZuulMessageImpl implements ZuulMessage {
 
 	@Override
 	public Iterable<HttpContent> getBodyContents() {
+		// 获取body的内容，类型为HttpContext的集合类型
 		return Collections.unmodifiableList(bodyChunks);
 	}
 
 	@Override
 	public boolean finishBufferedBodyIfIncomplete() {
+		// 在没有完成缓存body时，结束缓存
 		if (!bodyBufferedCompletely) {
 			bufferBodyContents(new DefaultLastHttpContent());
 			return true;
@@ -196,6 +210,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 
 	@Override
 	public void disposeBufferedBody() {
+		// 处理已缓存的body内容，逐个释放HttpContent内容块，并清除bodyChunks的内容
 		bodyChunks.forEach(chunk -> {
 			if ((chunk != null) && (chunk.refCnt() > 0)) {
 				chunk.release();
@@ -206,13 +221,13 @@ public class ZuulMessageImpl implements ZuulMessage {
 
 	@Override
 	public void runBufferedBodyContentThroughFilter(ZuulFilter filter) {
-		//Loop optimized for the common case: Most filters' processContentChunk() return
-		// original chunk passed in as is without any processing
+		// 如果chunk没有经过处理，那么将会跳过处理
 		for (int i = 0; i < bodyChunks.size(); i++) {
 			final HttpContent origChunk = bodyChunks.get(i);
+			// 根据ZuulMessage和当前HttpContent chunk处理filter的Content chunk，绝大部分实现都会返回origChunk
 			final HttpContent filteredChunk = filter.processContentChunk(this, origChunk);
 			if ((filteredChunk != null) && (filteredChunk != origChunk)) {
-				//filter actually did some processing, set the new chunk in and release the old chunk.
+				// filter确实做过一些处理，设置新chunk，释放旧chunk
 				bodyChunks.set(i, filteredChunk);
 				final int refCnt = origChunk.refCnt();
 				if (refCnt > 0) {
@@ -224,6 +239,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 
 	@Override
 	public ZuulMessage clone() {
+		// 复制一份ZuulMessage，包括复制内容chunk
 		final ZuulMessageImpl copy = new ZuulMessageImpl(context.clone(), headers.clone());
 		this.bodyChunks.forEach(chunk -> {
 			chunk.retain();
@@ -233,8 +249,7 @@ public class ZuulMessageImpl implements ZuulMessage {
 	}
 
 	/**
-	 * Override this in more specific subclasses to add request/response info for logging purposes.
-	 *
+	 * 可以重写指定的派生类，这个方式为了request/response的日志记录
 	 * @return
 	 */
 	@Override

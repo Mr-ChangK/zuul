@@ -21,28 +21,55 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * Filter注册器
  * @author mhawthorne
  */
 @Singleton
 public class FilterRegistry {
+	/**
+	 * 用ConcurrentHashMap来存储filter
+	 */
 	private final ConcurrentHashMap<String, ZuulFilter> filters = new ConcurrentHashMap<String, ZuulFilter>();
 
+	/**
+	 * 删除filter
+	 * @param key
+	 * @return
+	 */
 	public ZuulFilter remove(String key) {
 		return this.filters.remove(key);
 	}
 
+	/**
+	 * 获取filter
+	 * @param key
+	 * @return
+	 */
 	public ZuulFilter get(String key) {
 		return this.filters.get(key);
 	}
 
+	/**
+	 * 写入filter
+	 * @param key
+	 * @param filter
+	 */
 	public void put(String key, ZuulFilter filter) {
 		this.filters.putIfAbsent(key, filter);
 	}
 
+	/**
+	 * 统计filter的个数
+	 * @return
+	 */
 	public int size() {
 		return this.filters.size();
 	}
 
+	/**
+	 * 获取所有的filter
+	 * @return
+	 */
 	public Collection<ZuulFilter> getAllFilters() {
 		return this.filters.values();
 	}

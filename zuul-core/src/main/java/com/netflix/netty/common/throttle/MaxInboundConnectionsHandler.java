@@ -29,10 +29,10 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Closes any incoming new connections if current count is above a configured threshold.
- * <p>
- * When a connection is throttled, the channel is closed, and then a CONNECTION_THROTTLED_EVENT event is fired
- * not notify any other interested handlers.
+ * 最大接入连接Handler
+ * 如果当前总数超过了配置的阈值，关闭任何接入的连接
+ * 如果一个连接被限流了，channel将会被关闭，然后一个CONNECTION_THROTTLED_EVENT时间将开启，并且不会通知其他对其感兴趣的handler
+ * 是总的连接数
  */
 @ChannelHandler.Sharable
 public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter {
@@ -41,7 +41,13 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter {
 	private static final Logger LOG = LoggerFactory.getLogger(MaxInboundConnectionsHandler.class);
 	private static final AttributeKey<Boolean> ATTR_CH_THROTTLED = AttributeKey.newInstance("_channel_throttled");
 
+	/**
+	 * 计数器
+	 */
 	private final static AtomicInteger connections = new AtomicInteger(0);
+	/**
+	 * 最大连接数
+	 */
 	private final int maxConnections;
 
 	public MaxInboundConnectionsHandler(int maxConnections) {
@@ -56,9 +62,12 @@ public class MaxInboundConnectionsHandler extends ChannelInboundHandlerAdapter {
 			if (currentCount + 1 > maxConnections) {
 				LOG.warn("Throttling incoming connection as above configured max connections threshold of " + maxConnections);
 				Channel channel = ctx.channel();
+				// 设置channel限流属性
 				channel.attr(ATTR_CH_THROTTLED).set(Boolean.TRUE);
+
 				CurrentPassport.fromChannel(channel).add(PassportState.SERVER_CH_THROTTLING);
 				channel.close();
+				// 发送一个用户事件触发的事件
 				ctx.pipeline().fireUserEventTriggered(CONNECTION_THROTTLED_EVENT);
 			}
 		}

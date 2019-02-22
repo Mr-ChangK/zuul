@@ -53,22 +53,29 @@ import static org.mockito.Mockito.*;
  */
 public class HttpRequestMessageImpl implements HttpRequestMessage {
 	private static final Logger LOG = LoggerFactory.getLogger(HttpRequestMessageImpl.class);
-
+	/**
+	 * HttpRequestMessage body的最大值，默认值是15m
+	 */
 	private static final CachedDynamicIntProperty MAX_BODY_SIZE_PROP = new CachedDynamicIntProperty(
 			"zuul.HttpRequestMessage.body.max.size", 15 * 1000 * 1024
 	);
+	/**
+	 * 是否需要清理HttpRequestMessage的cookie，默认值是false
+	 */
 	private static final CachedDynamicBooleanProperty CLEAN_COOKIES = new CachedDynamicBooleanProperty(
 			"zuul.HttpRequestMessage.cookies.clean", false
 	);
 
 	/**
-	 * ":::"-delimited list of regexes to strip out of the cookie headers.
+	 * 这里存的是用户自定义的cookie清理的标志位，多个用:::分隔
+	 * 需要用户自定义"zuul.request.cookie.cleaner.strip"属性，默认值是" Secure,"属性
 	 */
 	private static final DynamicStringProperty REGEX_PTNS_TO_STRIP_PROP =
 			new DynamicStringProperty("zuul.request.cookie.cleaner.strip", " Secure,");
 	private static final List<Pattern> RE_STRIP;
 
 	static {
+		// 在静态初始化块中，分离需要清理的cookie的标志位
 		RE_STRIP = new ArrayList<>();
 		for (String ptn : REGEX_PTNS_TO_STRIP_PROP.get().split(":::")) {
 			RE_STRIP.add(Pattern.compile(ptn));
@@ -95,7 +102,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 	private HttpRequestInfo inboundRequest = null;
 	private Cookies parsedCookies = null;
 
-	// These attributes are populated only if immutable=true.
+	// 下面的属性只有在immutable=true时被复制
 	private String reconstructedUri = null;
 	private String pathAndQuery = null;
 	private String infoForLogging = null;
@@ -119,11 +126,10 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 		try {
 			this.decodedPath = URLDecoder.decode(path, "UTF-8");
 		} catch (Exception e) {
-			// fail to decode URI
-			// just set decodedPath to original path
+			// 解码失败，直接赋值
 			this.decodedPath = path;
 		}
-		// Don't allow this to be null.
+		// null值判断，为了实现方法调用方便，这里不能有空指针现象
 		this.queryParams = queryParams == null ? new HttpQueryParams() : queryParams;
 		this.clientIp = clientIp;
 		this.scheme = scheme;
@@ -263,6 +269,8 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 	@Override
 	public String getPathAndQuery() {
 		// If this instance is immutable, then lazy-cache.
+		// 如果HttpRequestMessage是不可变的，可以使用一层缓存
+		// 如果是可变的，重新生成一份"${path}+?+${queryParams}"
 		if (immutable) {
 			if (pathAndQuery == null) {
 				pathAndQuery = generatePathAndQuery();
@@ -432,11 +440,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 	}
 
 	/**
-	 * The originally request host. This will NOT include port.
-	 * <p>
-	 * The Host header may contain port, but in this method we strip it out for consistency - use the
-	 * getOriginalPort method for that.
-	 *
+	 * 最原始的Host，不带port
 	 * @return
 	 */
 	@Override
@@ -445,7 +449,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 		if (host == null) {
 			host = getHeaders().getFirst(HttpHeaderNames.HOST);
 			if (host != null) {
-				// Host header may have a trailing port. Strip that out if it does.
+				// 去除可能携带的port
 				host = PTN_COLON.split(host)[0];
 			}
 
@@ -458,6 +462,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
 	@Override
 	public String getOriginalScheme() {
+		// 获取原始的scheme，scheme指的是底层的协议
 		String scheme = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PROTO);
 		if (scheme == null) {
 			scheme = getScheme();
@@ -467,6 +472,7 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
 	@Override
 	public String getOriginalProtocol() {
+		// 获取原始协议
 		String proto = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PROTO_VERSION);
 		if (proto == null) {
 			proto = getProtocol();
@@ -476,10 +482,11 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 
 	@Override
 	public int getOriginalPort() {
+		// 获取原始的端口，跟上面获取原始的Host大同小异
 		int port;
 		String portStr = getHeaders().getFirst(HttpHeaderNames.X_FORWARDED_PORT);
 		if (portStr == null) {
-			// Check if port was specified on a Host header.
+			// 先检查Host中是否有对应的值
 			String hostHeader = getHeaders().getFirst(HttpHeaderNames.HOST);
 			if (hostHeader != null) {
 				String[] hostParts = PTN_COLON.split(hostHeader);
@@ -498,13 +505,13 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 	}
 
 	/**
-	 * Attempt to reconstruct the full URI that the client used.
+	 * 重构客户端请求的，完整的URI
 	 *
 	 * @return String
 	 */
 	@Override
 	public String reconstructURI() {
-		// If this instance is immutable, then lazy-cache reconstructing the uri.
+		// 如果HttpRequestMessage是不可变的，那么可以使用缓存的值
 		if (immutable) {
 			if (reconstructedUri == null) {
 				reconstructedUri = _reconstructURI();
@@ -518,19 +525,21 @@ public class HttpRequestMessageImpl implements HttpRequestMessage {
 	protected String _reconstructURI() {
 		try {
 			StringBuilder uri = new StringBuilder(100);
-
+			// 获取scheme，小写
 			String scheme = getOriginalScheme().toLowerCase();
 			uri.append(scheme);
+			// 分隔符，Host
 			uri.append(URI_SCHEME_SEP).append(getOriginalHost());
-
+			// 获取原始port
 			int port = getOriginalPort();
+			// 如果协议是Http并且端口号是80，或者协议是Https端口号是443，就不需要追加端口号
 			if ((URI_SCHEME_HTTP.equals(scheme) && 80 == port)
 					|| (URI_SCHEME_HTTPS.equals(scheme) && 443 == port)) {
 				// Don't need to include port.
 			} else {
 				uri.append(':').append(port);
 			}
-
+			// 获取请求的相对URI和查询参数
 			uri.append(getPathAndQuery());
 
 			return uri.toString();

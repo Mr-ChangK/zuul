@@ -20,6 +20,7 @@ import com.netflix.zuul.message.Headers;
 import com.netflix.zuul.message.ZuulMessage;
 
 /**
+ * Http请求信息
  * User: Mike Smith
  * Date: 7/15/15
  * Time: 1:18 PM
@@ -60,13 +61,13 @@ public interface HttpRequestInfo extends ZuulMessage {
 	String reconstructURI();
 
 	/**
-	 * Parse and lazily cache the request cookies.
+	 * 解析并懒缓存请求的cookies
 	 */
 	Cookies parseCookies();
 
 	/**
-	 * Force parsing/re-parsing of the cookies. May want to do this if headers
-	 * have been mutated since cookies were first parsed.
+	 * 强制解析或是重解析cookies
+	 * 当headers在cookies第一次解析后发生了变化
 	 */
 	Cookies reParseCookies();
 }

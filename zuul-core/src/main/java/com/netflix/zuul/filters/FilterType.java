@@ -17,6 +17,7 @@
 package com.netflix.zuul.filters;
 
 /**
+ * filter类型
  * User: Mike Smith
  * Date: 11/13/15
  * Time: 7:50 PM

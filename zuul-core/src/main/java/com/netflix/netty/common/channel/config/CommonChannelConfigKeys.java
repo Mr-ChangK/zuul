@@ -21,6 +21,7 @@ import com.netflix.netty.common.ssl.ServerSslConfig;
 import com.netflix.zuul.netty.ssl.SslContextFactory;
 
 /**
+ * 公共ChannelConfigKeys
  * User: michaels@netflix.com
  * Date: 2/8/17
  * Time: 6:21 PM

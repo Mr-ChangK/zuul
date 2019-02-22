@@ -36,18 +36,18 @@ public interface HttpResponseMessage extends HttpResponseInfo {
 	boolean removeExistingSetCookie(String cookieName);
 
 	/**
-	 * The mutable request that will be sent to Origin.
+	 * 易变的请求，将会发送给Origin
 	 */
 	HttpRequestMessage getOutboundRequest();
 
 	/**
+	 * 不可变的响应，是从Origin接收到的
 	 * The immutable response that was received from Origin.
 	 */
 	HttpResponseInfo getInboundResponse();
 
 	/**
-	 * This should be called after response received from Origin, to store
-	 * a copy of the response as-is.
+	 * 将会在接收到来自Origin的响应时调用，为了存储一份响应的拷贝
 	 */
 	void storeInboundResponse();
 }

@@ -21,78 +21,90 @@ import io.netty.handler.codec.http.HttpContent;
 import rx.Observable;
 
 /**
- * BAse interface for ZuulFilters
+ * Zuul基础过滤器
  *
  * @author Mikey Cohen
  * Date: 10/27/11
  * Time: 3:03 PM
  */
 public interface ZuulFilter<I extends ZuulMessage, O extends ZuulMessage> extends ShouldFilter<I> {
+	/**
+	 * 是否生效
+	 * @return
+	 */
 	boolean isDisabled();
 
+	/**
+	 * filter的名称
+	 * @return
+	 */
 	String filterName();
 
 	/**
-	 * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
-	 * important for a filter. filterOrders do not need to be sequential.
+	 * filter实现必须声明filterOrder()方法，如果你对filter的优先级并不关心，那么就可能会拥有相同优先级的Filters
+	 * filterOrders不必按照顺序
 	 *
-	 * @return the int order of a filter
+	 * @return Filter的优先级，类型为int
 	 */
 	int filterOrder();
 
 	/**
-	 * to classify a filter by type. Standard types in Zuul are "in" for pre-routing filtering,
-	 * "end" for routing to an origin, "out" for post-routing filters.
-	 *
-	 * @return FilterType
+	 * 用于区分一个Filter的类型
+	 * 前置路由过滤的标准类型是in
+	 * Origin的类型是end
+	 * 后置路由过滤的类型是out
+	 * @return 过滤类型
 	 */
 	FilterType filterType();
 
 	/**
-	 * Whether this filter's shouldFilter() method should be checked, and apply() called, even
-	 * if SessionContext.stopFilterProcessing has been set.
-	 *
+	 * 确认filter的shouldFilter()方法是否需要检查，并且调用apply()方法，即使SessionContext.stopFilterProcessing属性已经设置
 	 * @return boolean
 	 */
 	boolean overrideStopFilterProcessing();
 
 	/**
-	 * Called by zuul filter runner before sending request through this filter. The filter can throw
-	 * ZuulFilterConcurrencyExceededException if it has reached its concurrent requests limit and does
-	 * not wish to process the request. Generally only useful for async filters.
+	 * Zuul Filter调用线程会在发送请求通过这个filter时调用这个方法
+	 * 如果达到了并发请求限制，并且准备拒绝执行这个请求，filter会抛出ZuulFilterConcurrencyExceedException
+	 * 通常对异步的filters生效
 	 */
 	void incrementConcurrency() throws ZuulFilterConcurrencyExceededException;
 
 	/**
-	 * if shouldFilter() is true, this method will be invoked. this method is the core method of a ZuulFilter
+	 * 如果shouldFilter()返回结果为true，这个方法将会被调用
+	 * 是ZuulFilter的核心方法
 	 */
 	Observable<O> applyAsync(I input);
 
 	/**
-	 * Called by zuul filter after request is processed by this filter.
+	 * 在请求被filter处理完成后会调用这个方法
 	 */
 	void decrementConcurrency();
 
+	/**
+	 * 获取同步类型
+	 * @return
+	 */
 	FilterSyncType getSyncType();
 
 	/**
-	 * Choose a default message to use if the applyAsync() method throws an exception.
+	 * 如果applyAsync()方法抛出错误，那么这个方法将提供默认的响应文案
 	 *
 	 * @return ZuulMessage
 	 */
 	O getDefaultOutput(I input);
 
 	/**
-	 * Filter indicates it needs to read and buffer whole body before it can operate on the messages by returning true.
-	 * The decision can be made at runtime, looking at the request type. For example if the incoming message is a MSL
-	 * message MSL decryption filter can return true here to buffer whole MSL message before it tries to decrypt it.
+	 * filer指明它需要读取和缓存整个body，在它可以在reuturning true操作之前
+	 * 描述在运行时完成，观察request type
+	 * 如果一个正到达的消息是一个MSL消息，MSL解码，filter可以在解码之前return true，并备份整个MSL消息，
 	 *
 	 * @return true if this filter needs to read whole body before it can run, false otherwise
 	 */
 	boolean needsBodyBuffered(I input);
 
 	/**
-	 * Optionally transform HTTP content chunk received
+	 * 非强制性的传输接收到的HTTP内容块
 	 *
 	 * @param chunk
 	 * @return

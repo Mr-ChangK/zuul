@@ -29,9 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Chooses whether a new connection is prefixed with the ProxyProtocol from an ELB. If it is, then
- * it adds a HAProxyMessageDecoder into the pipeline after THIS handler.
- * <p>
+ * 可选择的HAProxyMessageDecoder
+ * 选择一个来自ELB的新连接是否是以ProxyProtocol为前缀的，如果是，可以在此handler之后，向pipeline中加入一个HAProxyMessageDecoder
  * User: michaels@netflix.com
  * Date: 3/24/16
  * Time: 3:13 PM
@@ -45,15 +44,15 @@ public class OptionalHAProxyMessageDecoder extends ChannelInboundHandlerAdapter 
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		if (msg instanceof ByteBuf) {
 			try {
+				// 从msg中检测是否携带代理协议
 				ProtocolDetectionResult<HAProxyProtocolVersion> result = HAProxyMessageDecoder.detectProtocol((ByteBuf) msg);
 
 				// TODO - is it possible that this message could be split over multiple ByteBufS, and therefore this would fail?
+				// 如果检测到，在OptionalHAProxyMessageDecoder后加上一个HAProxyMessageDecoder类型的Handler
+				// 然后删除OptionalHAProxyMessageDecoder类型的Handler
 				if (result.state() == ProtocolDetectionState.DETECTED) {
-					// Add the actual HAProxy decoder.
-					// Note that the HAProxyMessageDecoder will remove itself once it has finished decoding the initial ProxyProtocol message(s).
 					ctx.pipeline().addAfter(NAME, null, new HAProxyMessageDecoder());
 
-					// Remove this handler, as now no longer needed.
 					ctx.pipeline().remove(this);
 				}
 			} catch (Exception e) {

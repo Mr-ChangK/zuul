@@ -31,7 +31,7 @@ import io.netty.util.AsciiString;
 import java.util.Collection;
 
 /**
- * Strip out any X-Forwarded-* headers from inbound http requests if connection is not trusted.
+ * 如果连接不可信，剥离进入Http请求的任何X-Forward-*的headers
  */
 @ChannelHandler.Sharable
 public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdapter {
@@ -41,6 +41,7 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
 		NEVER
 	}
 
+	// 需要剥离的请求头
 	private static final Collection<AsciiString> HEADERS_TO_STRIP = Sets.newHashSet(
 			new AsciiString("x-forwarded-for"),
 			new AsciiString("x-forwarded-port"),
@@ -62,18 +63,20 @@ public class StripUntrustedProxyHeadersHandler extends ChannelInboundHandlerAdap
 
 			switch (allowWhen) {
 				case NEVER:
+					// 永不允许，剥离所有
 					stripXFFHeaders(req);
 					break;
 				case MUTUAL_SSL_AUTH:
+					// 共用SSL权限，如果不是强制使用共用SSL，剥离所有
 					if (!connectionIsUsingMutualSSLWithAuthEnforced(ctx.channel())) {
 						stripXFFHeaders(req);
 					}
 					break;
 				case ALWAYS:
-					// Do nothing.
+					// 总是允许，什么都不做
 					break;
 				default:
-					// default to not allow.
+					// 默认剥离所有
 					stripXFFHeaders(req);
 			}
 		}

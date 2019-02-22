@@ -19,6 +19,7 @@ package com.netflix.zuul.message.http;
 import com.netflix.zuul.message.ZuulMessage;
 
 /**
+ * Http请求消息
  * User: Mike Smith
  * Date: 7/15/15
  * Time: 5:36 PM

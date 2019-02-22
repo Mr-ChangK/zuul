@@ -19,6 +19,7 @@ package com.netflix.netty.common.channel.config;
 import java.util.HashMap;
 
 /**
+ * ChannelConfig，依赖ChannelConfigKey和ChannelConfigValue
  * User: michaels@netflix.com
  * Date: 2/8/17
  * Time: 6:43 PM

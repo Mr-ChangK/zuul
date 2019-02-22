@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import static org.junit.Assert.*;
 
 /**
+ * HttpResponseMessage的实现
  * User: michaels
  * Date: 2/24/15
  * Time: 10:54 AM
@@ -203,23 +204,21 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
 
 	@Override
 	public boolean removeExistingSetCookie(String cookieName) {
+		// 遍历headers，如果发现headers中有以"${cookieName}="开头的值，那么不将其加入到已过滤的的headers中
 		String cookieNamePrefix = cookieName + "=";
 		boolean dirty = false;
 		Headers filtered = new Headers();
 		for (Header hdr : getHeaders().entries()) {
 			if (HttpHeaderNames.SET_COOKIE.equals(hdr.getName())) {
 				String value = hdr.getValue();
-
-				// Strip out this set-cookie as requested.
+				// 除需要被移除的cookie之外，拷贝其他所有的headers
 				if (value.startsWith(cookieNamePrefix)) {
-					// Don't copy it.
 					dirty = true;
 				} else {
-					// Copy all other headers.
 					filtered.add(hdr.getName(), hdr.getValue());
 				}
 			} else {
-				// Copy all other headers.
+				// 如果没发现需要移除的，拷贝所有
 				filtered.add(hdr.getName(), hdr.getValue());
 			}
 		}
@@ -232,17 +231,19 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
 
 	@Override
 	public void addSetCookie(Cookie cookie) {
+		// 添加cookie
 		getHeaders().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
 	}
 
 	@Override
 	public void setSetCookie(Cookie cookie) {
+		// 复制cookie
 		getHeaders().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.encode(cookie));
 	}
 
 	@Override
 	public ZuulMessage clone() {
-		// TODO - not sure if should be cloning the outbound request object here or not....
+		// TODO - 并不确定在这里是否需要克隆一份outbound request
 		HttpResponseMessageImpl clone = new HttpResponseMessageImpl(getContext().clone(),
 				getHeaders().clone(),
 				getOutboundRequest(), getStatus());
@@ -254,6 +255,7 @@ public class HttpResponseMessageImpl implements HttpResponseMessage {
 
 	protected HttpResponseInfo copyResponseInfo() {
 		// Unlike clone(), we create immutable copies of the Headers here.
+		// 不同于clone()，我们会创建一个不可变的Headers拷贝
 		HttpResponseMessageImpl response = new HttpResponseMessageImpl(getContext(),
 				getHeaders().immutableCopy(),
 				getOutboundRequest(), getStatus());

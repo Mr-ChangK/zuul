@@ -21,6 +21,7 @@ import com.netflix.zuul.filters.ZuulFilter;
 import io.netty.handler.codec.http.HttpContent;
 
 /**
+ * 可以理解为是Zuul中通用的请求model
  * User: Mike Smith
  * Date: 7/16/15
  * Time: 12:22 AM

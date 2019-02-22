@@ -33,18 +33,11 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 /**
- * Base abstract class for ZuulFilters. The base class defines abstract methods to define:
- * filterType() - to classify a filter by type. Standard types in Zuul are "pre" for pre-routing filtering,
- * "route" for routing to an origin, "post" for post-routing filters, "error" for error handling.
- * We also support a "static" type for static responses see  StaticResponseFilter.
- * <p/>
- * filterOrder() must also be defined for a filter. Filters may have the same  filterOrder if precedence is not
- * important for a filter. filterOrders do not need to be sequential.
- * <p/>
- * ZuulFilters may be disabled using Archaius Properties.
- * <p/>
- * By default ZuulFilters are static; they don't carry state. This may be overridden by overriding the isStaticFilter() property to false
+ * 旧Zuul的基抽象类，实现了ZuulFilter接口，同时也声明了一些需要实现的抽象方法
+ * 之前的Filter类型是pre为前置路由过滤，route为Origin路由过滤，post为后置路由过滤，error为异常处理
+ * 静态响应可以使用StaticResponseFilter
  *
+ * 静态路由过滤器一般不会有状态值，通常表现为isStaticFilter()方法的值为false
  * @author Mikey Cohen
  * Date: 10/26/11
  * Time: 4:29 PM
@@ -57,6 +50,9 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 	private final CachedDynamicBooleanProperty filterDisabled;
 	private final CachedDynamicIntProperty filterConcurrencyLimit;
 
+	/**
+	 * 是否开启并发保护，属性zuul.filter.concurrency.protect.enabled，默认值为true
+	 */
 	private static final CachedDynamicBooleanProperty concurrencyProtectEnabled = new CachedDynamicBooleanProperty("zuul.filter.concurrency.protect.enabled", true);
 
 
@@ -70,16 +66,19 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
 	@Override
 	public String filterName() {
+		// 显示当前类的名称
 		return this.getClass().getName();
 	}
 
 	@Override
 	public boolean overrideStopFilterProcessing() {
+		// 是否重写停止filter处理
 		return false;
 	}
 
 	/**
-	 * The name of the Archaius property to disable this filter. by default it is zuul.[classname].[filtertype].disable
+	 * 生成使失效filter的名称
+	 * 默认是zuul.${className}.${filterType}.disable
 	 *
 	 * @return
 	 */
@@ -88,7 +87,8 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 	}
 
 	/**
-	 * The name of the Archaius property for this filter's max concurrency. by default it is zuul.[classname].[filtertype].concurrency.limit
+	 * filter支持的最大并发数
+	 * 默认是zuul.${className}.${filter}.concurrency.limit
 	 *
 	 * @return
 	 */
@@ -97,7 +97,7 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 	}
 
 	/**
-	 * If true, the filter has been disabled by archaius and will not be run
+	 * 判断filter的状态是否为已失效
 	 *
 	 * @return
 	 */
@@ -113,6 +113,7 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
 	@Override
 	public FilterSyncType getSyncType() {
+		// filter的同步方式
 		return FilterSyncType.ASYNC;
 	}
 
@@ -123,11 +124,13 @@ public abstract class BaseFilter<I extends ZuulMessage, O extends ZuulMessage> i
 
 	@Override
 	public boolean needsBodyBuffered(I input) {
+		// 是否需要进行缓存body
 		return false;
 	}
 
 	@Override
 	public HttpContent processContentChunk(ZuulMessage zuulMessage, HttpContent chunk) {
+		// 处理HttpContent chunk
 		return chunk;
 	}
 
