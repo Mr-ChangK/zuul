@@ -12,6 +12,11 @@ buildscript {
             force 'org.jfrog.buildinfo:build-info-extractor-gradle:4.4.7'
         }
     }
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public/' }
+        mavenLocal()
+        mavenCentral()
+    }
 }
 
 plugins {
